@@ -139,7 +139,7 @@ export default function PropertyListing() {
     };
 
     loadData();
-  }, [filters, pagination.page, navigate]);
+  }, [filters, pagination.page, navigate, pagination.page_size]);
 
   const handleFilterChange = (newFilters) => {
     const updatedFilters = { ...filters, ...newFilters };

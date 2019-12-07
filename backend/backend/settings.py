@@ -246,10 +246,10 @@ JAZZMIN_SETTINGS = {
     "site_icon": None,
 
     # Welcome text on the login screen
-    "welcome_sign": "Welcome to the Adminstration Panel",
+    "welcome_sign": "Welcome to Visit Adminstration Panel",
 
     # Copyright on the footer
-    "copyright": "Visit Masvingo by Slyker Tech Web Services",
+    "copyright": "Visit Masvingo",
 
     # List of model admins to search from the search bar, search bar omitted if excluded
     # If you want to use a single search field you dont need to use a list, you can use a simple string 
@@ -269,7 +269,7 @@ JAZZMIN_SETTINGS = {
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
 
         # external url that opens in a new window (Permissions can be added)
-        {"name": "Support", "url": "https://slykertech.co.zw/contact-us/", "new_window": True},
+        {"name": "Support", "url": "https://slykertech.co.zw/contact", "new_window": True},
 
         # model admin to link to (Permissions checked against model)
         {"model": "core.User"},
@@ -284,7 +284,7 @@ JAZZMIN_SETTINGS = {
 
     # Additional links to include in the user menu on the top right ("app" url type is not allowed)
     "usermenu_links": [
-        {"name": "Support", "url": "https://slykertech.co.zw/contact-us/", "new_window": True},
+        {"name": "Support", "url": "https://slykertech.co.zw/contact", "new_window": True},
         {"model": "auth.user"}
     ],
 
@@ -296,7 +296,7 @@ JAZZMIN_SETTINGS = {
     "show_sidebar": True,
 
     # Whether to aut expand the menu
-    "navigation_expanded": True,
+    "navigation_expanded": False,
 
     # Hide these apps when generating side menu e.g (auth)
     "hide_apps": [],
