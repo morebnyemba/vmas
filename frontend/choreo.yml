@@ -1,0 +1,12 @@
+version: 1.0.0
+name: vmas
+components:
+  - name: frontend
+    type: webapp
+    source:
+      type: git
+      url: https://github.com/morebnyemba/vmas.git
+      branch: main
+    build:
+      command: npm run build
+      output: build
