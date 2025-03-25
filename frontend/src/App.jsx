@@ -4,7 +4,7 @@ import { Hero } from "./components/hero";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
-import Property_List from "./pages/PropertyList";
+import PropertyList from "./pages/Property_List";
 
 function App() {
   return (
