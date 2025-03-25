@@ -5,7 +5,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
 import PropertyList from "./pages/Property_List";
-import Footer from '@/components/Footer'; // Adjusted path to match previous footer creation
+import Footer from '@/components/footer'; // Adjusted path to match previous footer creation
 
 function App() {
   return (
