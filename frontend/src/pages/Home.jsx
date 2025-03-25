@@ -1,7 +1,7 @@
 import React from 'react';
 import { Hero } from '../components/hero';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '../components/ui/card';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 
 function Home() {
   return (
