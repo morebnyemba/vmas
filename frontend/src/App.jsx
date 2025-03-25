@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Header } from "@/components/Header.jsx"; // Or .js, .tsx, etc.
-import { Hero } from "@/components/Hero.jsx";   // Or .js, .tsx, etc.
-import About from "@/pages/About.jsx";       // Or .js, .tsx, etc.
-import Contact from "@/pages/Contact.jsx";     // Or .js, .tsx, etc.
-import Services from "@/pages/Services.jsx";    // Or .js, .tsx, etc.
+import { Header } from "@./components/Header";
+import { Hero } from "@./components/Hero";
+import About from "@./pages/About";
+import Contact from "@./pages/Contact";
+import Services from "@./pages/Services";
+
 function App() {
   return (
     <BrowserRouter>
