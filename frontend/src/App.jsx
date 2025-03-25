@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Header } from "./components/Header";
-import { Hero } from "./components/Hero";
+import { Header } from "./components/header";
+import { Hero } from "./components/hero";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
