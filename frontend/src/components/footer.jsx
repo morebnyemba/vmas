@@ -12,9 +12,9 @@ const Footer = ({ className }) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Real Estate Pro</h3>
+            <h3 className="text-lg font-semibold">Visit Masvingo</h3>
             <p className="text-sm text-muted-foreground">
-              Helping you find your dream property since 2015.
+              Helping you find your dream property.
             </p>
           </div>
 
@@ -39,7 +39,7 @@ const Footer = ({ className }) => {
               <p>123 Property Lane</p>
               <p>New York, NY 10001</p>
               <p>Phone: (+263) 123-4567</p>
-              <p>Email: info@vmas.com.zw</p>
+              <p>Email: info@vmas.co.zw</p>
             </div>
           </div>
 
@@ -57,7 +57,10 @@ const Footer = ({ className }) => {
 
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
           <div className="mb-4 md:mb-0">
-            © {new Date().getFullYear()} Real Estate Pro. All rights reserved.
+            © {new Date().getFullYear()} Visit Masvingo. All rights reserved.
+          </div>
+          <div className="mb-4 md:mb-0 bg-accent">
+            Designed And Developed By <a href="https://slykertech.co.zw" className=' text-blue-600'>Slyker Tech Web Services</a>.
           </div>
           <div className="flex space-x-4">
             <Button variant="link" className="text-muted-foreground">

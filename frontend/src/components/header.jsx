@@ -25,7 +25,7 @@ export function Header() {
       <div className="container flex h-14 items-center justify-between">
         {/* Mobile Logo and Menu */}
         <div className="flex items-center gap-4 md:hidden w-full justify-between">
-          <span className="text-lg font-bold">VisitMas</span>
+          <span className="text-lg font-bold">Visit Masvingo</span>
           <div className="flex items-center gap-2">
             <Button variant="outline" className={"hover:bg-blue-600"}>
               Get Started
@@ -64,7 +64,7 @@ export function Header() {
 
         {/* Desktop Logo */}
         <div className="mr-4 hidden md:flex pl-4">
-          <span className="text-lg font-bold">VisitMas</span>
+          <span className="text-lg font-bold">Visit Masvingo<sub>.co.zw</sub></span>
         </div>
 
         {/* Desktop Navigation */}
