@@ -12,72 +12,82 @@ import { cn } from "@/lib/utils";
 export function Hero() {
   return (
     <section className="relative h-screen w-full">
-      {/* Background Image with Overlay */}
+      {/* Background Image with Blue Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2076&q=80"
+          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9"
           alt="Modern luxury home"
           className="h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/70 via-blue-900/40 to-transparent" />
       </div>
 
       {/* Hero Content */}
       <div className="relative z-10 flex h-full items-center justify-center">
         <div className="container px-4">
-          <div className="max-w-2xl text-white">
-            <h1 className="mb-6 text-4xl font-bold leading-tight lg:text-5xl">
-              Find Your Dream Home with Ease
+          <div className="mx-auto max-w-3xl text-center text-white">
+            <h1 className="mb-6 text-4xl font-bold leading-tight drop-shadow-lg lg:text-6xl">
+              Discover Your Perfect Property
             </h1>
-            <p className="mb-8 text-lg lg:text-xl">
-              Discover premium properties in your ideal neighborhood. Modern living starts here.
+            <p className="mx-auto mb-8 max-w-xl text-lg lg:text-xl lg:leading-relaxed">
+              Experience seamless property hunting with our curated selection of premium homes
             </p>
+          </div>
 
-            {/* Search/CTA Section using shadcn components */}
-            <div className="rounded-lg bg-white/20 p-6 backdrop-blur-sm">
-              <div className="grid gap-4 md:grid-cols-3 grid-cols-1">
+          {/* Search Form Container */}
+          <div className="mx-auto mt-8 max-w-4xl">
+            <div className="rounded-xl bg-white/20 p-6 backdrop-blur-lg border border-blue-100/30">
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Transaction Type */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Buy/Rent</label>
+                  <label className="block text-sm font-semibold text-blue-50">Transaction Type</label>
                   <Select>
-                    <SelectTrigger className="bg-white/80 text-gray-900">
-                      <SelectValue placeholder="Buy/Rent" />
+                    <SelectTrigger className="bg-blue-50/80 text-blue-900 hover:bg-blue-100">
+                      <SelectValue placeholder="Buy or Rent?" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="buy">Buy</SelectItem>
-                      <SelectItem value="rent">Rent</SelectItem>
+                      <SelectItem value="buy" className="text-blue-900">Buy Property</SelectItem>
+                      <SelectItem value="rent" className="text-blue-900">Rent Property</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Location */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Location</label>
+                  <label className="block text-sm font-semibold text-blue-50">Location</label>
                   <Input
-                    placeholder="Enter city or neighborhood"
-                    className="bg-white/80 text-gray-900"
+                    placeholder="Enter area or city"
+                    className="bg-blue-50/80 text-blue-900 placeholder-blue-500 focus:border-blue-300"
                   />
                 </div>
+
+                {/* Property Type */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium">Property Type</label>
+                  <label className="block text-sm font-semibold text-blue-50">Property Type</label>
                   <Select>
-                    <SelectTrigger className="bg-white/80 text-gray-900">
+                    <SelectTrigger className="bg-blue-50/80 text-blue-900 hover:bg-blue-100">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="house">House</SelectItem>
-                      <SelectItem value="apartment">Apartment</SelectItem>
-                      <SelectItem value="villa">Villa</SelectItem>
+                      <SelectItem value="house" className="text-blue-900">Houses</SelectItem>
+                      <SelectItem value="apartment" className="text-blue-900">Apartments</SelectItem>
+                      <SelectItem value="villa" className="text-blue-900">Villas</SelectItem>
+                      <SelectItem value="commercial" className="text-blue-900">Commercial</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="mt-6 flex flex-col gap-4">
-                <Button className="py-6 text-lg hover:bg-blue-700 w-full">
-                  Search Properties
+
+              {/* Action Buttons */}
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
+                <Button className="h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700">
+                  Explore Properties
                 </Button>
                 <Button
                   variant="outline"
-                  className={`border-2 border-white bg-transparent py-6 text-lg text-white hover:bg-white/20 w-full`}
+                  className="h-12 border-2 border-blue-200 text-blue-900 hover:bg-blue-50/50"
                 >
-                  Contact Agent
+                  Connect with Agent
                 </Button>
               </div>
             </div>
