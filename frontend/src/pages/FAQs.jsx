@@ -1,4 +1,3 @@
-import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Accordion,
@@ -59,15 +58,12 @@ export default function FAQs() {
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}
-                className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden"
+                className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden transition-all"
               >
-                <AccordionTrigger className="px-6 py-4 hover:no-underline group">
-                  <div className="flex items-center w-full">
-                    <div className="flex-1 text-left font-semibold text-blue-900 group-hover:text-blue-700">
-                      {item.question}
-                    </div>
-                    <ChevronDown className="h-5 w-5 text-blue-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                  </div>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-blue-50 transition-colors">
+                  <span className="flex-1 text-left font-semibold text-blue-900">
+                    {item.question}
+                  </span>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-4 pt-0 text-blue-600">
                   {item.answer}
@@ -81,9 +77,14 @@ export default function FAQs() {
             <p className="text-blue-600 mb-6 max-w-2xl mx-auto">
               Our team is ready to help with any additional questions you may have about properties in Masvingo.
             </p>
-            <Button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 text-lg">
-              Contact Our Support Team
-            </Button>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button className="bg-blue-600 hover:bg-blue-700 px-8 py-4">
+                Call Support: +263 772 123 456
+              </Button>
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4">
+                Email Us
+              </Button>
+            </div>
           </div>
         </div>
       </div>
