@@ -5,6 +5,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
 import PropertyList from "./pages/Property_List";
+import PropertyDetailPage from "./pages/Property_Detail";
 import Footer from '@/components/footer';
 import Buy from "./pages/Buy";
 import Sell from "./pages/Sell";
@@ -34,6 +35,7 @@ function App() {
             
             {/* Property Routes */}
             <Route path="/properties" element={<PropertyList />} />
+            <Route path="/properties/detail" element={<PropertyDetailPage/>} />
             <Route path="/buy" element={<Buy />} />
             <Route path="/sell" element={<Sell />} />
             <Route path="/rent" element={<Rent />} />
