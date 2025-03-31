@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { 
-  Menu, X, Home, Building, HandCoins, ClipboardList, 
+import {
+  Menu, X, Home, Building, HandCoins, ClipboardList,
   Info, Phone, ChevronDown, CircleDollarSign, HomeIcon,
   HelpCircle, LogIn, Facebook, Twitter, Instagram, Linkedin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -30,8 +30,8 @@ export function Header() {
 
   const navLinks = [
     { name: "Home", href: "/", icon: <Home className="h-4 w-4 mr-2" /> },
-    { 
-      name: "Properties", 
+    {
+      name: "Properties",
       icon: <Building className="h-4 w-4 mr-2" />,
       subLinks: [
         { name: "Buy", href: "/buy", icon: <CircleDollarSign className="h-4 w-4 mr-2" /> },
@@ -230,8 +230,8 @@ export function Header() {
               <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 shadow-lg">
                 Get Started
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="border-blue-200 text-blue-900 hover:bg-blue-50 gap-2"
                 asChild
               >

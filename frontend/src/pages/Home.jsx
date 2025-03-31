@@ -141,12 +141,12 @@ function Home() {
             Let us guide you through every step of finding and securing your ideal property
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button className="bg-white text-blue-900 hover:bg-blue-50 px-8 py-4 text-lg">
+            <Button className="bg-white text-blue-900 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg">
               Browse Properties
             </Button>
             <Button 
               variant="outline" 
-              className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg"
+              className="border-white text-blue-900 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg"
             >
               Contact Agent
             </Button>

@@ -1,32 +1,46 @@
-import React from 'react';
+// src/pages/Contact.jsx
+import { Button } from "@/components/ui/button";
 
-function Services() {
+export default function ContactPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md mx-auto my-8 p-6 shadow-lg border border-gray-200 rounded-lg bg-white relative">
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <img
-            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2076&q=80"
-            alt="Background"
-            className="w-full h-full object-cover"
-          />
+    <div className="container py-12">
+      <h1 className="text-3xl font-bold mb-8">Contact Us</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-xl font-bold mb-4">Our Office</h2>
+          <address className="not-italic">
+            <p className="mb-2">123 Main Street</p>
+            <p className="mb-2">Masvingo, Zimbabwe</p>
+            <p className="mb-4">Phone: +263 772 123 456</p>
+          </address>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            Get Directions
+          </Button>
         </div>
-        <div className="relative z-10">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold">Under Development</h2>
-          </div>
-          <div className="mb-4">
-            <p className="text-gray-600">
-              This section of the site is currently under development and is constantly being updated. Please check back later for more content.
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Thank you for your patience!</p>
-          </div>
+        <div>
+          <h2 className="text-xl font-bold mb-4">Send a Message</h2>
+          <form className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="Your Name" 
+              className="w-full p-2 border rounded"
+            />
+            <input 
+              type="email" 
+              placeholder="Your Email" 
+              className="w-full p-2 border rounded"
+            />
+            <textarea 
+              placeholder="Your Message" 
+              rows="4" 
+              className="w-full p-2 border rounded"
+            ></textarea>
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              Send Message
+            </Button>
+          </form>
         </div>
       </div>
     </div>
   );
 }
-
-export default Services;
