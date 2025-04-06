@@ -86,6 +86,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "properties",
     "django_filters",
+    'phonenumber_field',
+    'django_json_widget',
+    'rest_framework_simplejwt.token_blacklist',
+    "payments",
     
 ]
 
@@ -315,6 +319,7 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
+        "properties.Property": "fas fa-house",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
@@ -374,3 +379,9 @@ LOGGING = {
         },
     },
 }
+
+FERNET_KEYS = [
+    '',
+]
+
+FIELD_ENCRYPTION_KEY = '_HBZ-Xp-XFhgZiVLQQI-ejR2lyfsF4mFX1KUqzkH9cE='

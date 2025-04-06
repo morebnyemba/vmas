@@ -2,8 +2,32 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from core.models import User, Agency  # Using your existing Agency model from core
+from core.models import User, Agency
 from datetime import date
+
+class PlaceOfInterest(models.Model):
+    PLACE_TYPES = [
+        ('school', _('School')),
+        ('hospital', _('Hospital')),
+        ('park', _('Park')),
+        ('shopping', _('Shopping Center')),
+        ('transport', _('Public Transport')),
+        ('restaurant', _('Restaurant')),
+        ('other', _('Other')),
+    ]
+
+    name = models.CharField(_('Name'), max_length=255)
+    place_type = models.CharField(_('Type'), max_length=20, choices=PLACE_TYPES, default='other')
+    address = models.CharField(_('Address'), max_length=255, blank=True)
+    latitude = models.DecimalField(_('Latitude'), max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(_('Longitude'), max_digits=9, decimal_places=6, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.get_place_type_display()}: {self.name}"
+
+    class Meta:
+        verbose_name = _('Place of Interest')
+        verbose_name_plural = _('Places of Interest')
 
 class Property(models.Model):
     PROPERTY_TYPES = [
@@ -18,14 +42,19 @@ class Property(models.Model):
         ('rented', _('Rented')),
         ('under_maintenance', _('Under Maintenance')),
     ]
+    LISTING_TYPES = [
+        ('sale', _('For Sale')),
+        ('rent', _('For Rent')),
+        ('both', _('For Sale and Rent')),
+    ]
     
     # Basic Information
     title = models.CharField(_('Title'), max_length=255)
     description = models.TextField(_('Description'))
     property_type = models.CharField(_('Type'), max_length=20, choices=PROPERTY_TYPES)
     status = models.CharField(_('Status'), max_length=20, choices=STATUS_CHOICES, default='available')
-    featured = models.BooleanField(_('Featured Property'), default=False,
-                                  help_text=_('Mark this property as featured'))
+    listing_type = models.CharField(_('Listing Type'), max_length=10, choices=LISTING_TYPES, default='sale')
+    featured = models.BooleanField(_('Featured Property'), default=False)
     
     # Location Details
     address = models.CharField(_('Address'), max_length=255)
@@ -35,33 +64,15 @@ class Property(models.Model):
     
     # Pricing & Measurements
     price = models.DecimalField(_('Price'), max_digits=10, decimal_places=2)
-    viewing_fee = models.DecimalField(
-        _('Viewing Fee'),
-        max_digits=10,
-        decimal_places=2,
-        default=50.00,
-        help_text=_('Fee required to view this property')
-    )
+    viewing_fee = models.DecimalField(_('Viewing Fee'), max_digits=10, decimal_places=2, default=50.00)
     bedrooms = models.IntegerField(_('Bedrooms'), default=0)
     bathrooms = models.DecimalField(_('Bathrooms'), max_digits=3, decimal_places=1, default=0)
     area = models.DecimalField(_('Area (sq ft)'), max_digits=10, decimal_places=2)
     
     # Relationships
-    owner = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='properties',
-        verbose_name=_('Owner')
-    )
-    listing_agency = models.ForeignKey(
-        Agency,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='listed_properties',
-        verbose_name=_('Listing Agency'),
-        help_text=_('Agency that listed this property')
-    )
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
+    listing_agency = models.ForeignKey(Agency, on_delete=models.SET_NULL, null=True, blank=True, related_name='listed_properties')
+    places_of_interest = models.ManyToManyField(PlaceOfInterest, through='PropertyPlaceOfInterest', related_name='properties')
     
     # Timestamps
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
@@ -70,42 +81,34 @@ class Property(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_property_type_display()})"
 
+    def clean(self):
+        if self.listing_type == 'rent' and self.status == 'sold':
+            raise ValidationError(_("A rental property cannot have status 'sold'"))
+        if self.listing_type == 'sale' and self.status == 'rented':
+            raise ValidationError(_("A sale property cannot have status 'rented'"))
+
     class Meta:
         verbose_name = _('Property')
         verbose_name_plural = _('Properties')
         ordering = ['-created_at']
 
+class PropertyPlaceOfInterest(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='property_places')
+    place = models.ForeignKey(PlaceOfInterest, on_delete=models.CASCADE)
+    distance = models.DecimalField(_('Distance (miles)'), max_digits=5, decimal_places=1)
+
+    class Meta:
+        unique_together = ('property', 'place')
+        verbose_name = _('Property Place of Interest')
+        verbose_name_plural = _('Property Places of Interest')
+
+    def __str__(self):
+        return f"{self.place.name} ({self.distance}mi from {self.property.title})"
+
 class PropertyImage(models.Model):
-    PROCESSING_STATUS = [
-        ('pending', _('Pending Processing')),
-        ('processed', _('Processed')),
-        ('failed', _('Processing Failed')),
-    ]
-    
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name='images',
-        verbose_name=_('Property')
-    )
-    image = models.ImageField(
-        _('Image'),
-        upload_to='property_images/',
-        help_text=_('Upload high-quality property photos (JPEG/PNG)')
-    )
-    thumbnail = models.ImageField(
-        _('Thumbnail'),
-        upload_to='property_thumbnails/',
-        null=True,
-        blank=True,
-        help_text=_('Automatically generated thumbnail image')
-    )
-    processing_status = models.CharField(
-        _('Processing Status'),
-        max_length=20,
-        choices=PROCESSING_STATUS,
-        default='pending'
-    )
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(_('Image'), upload_to='property_images/')
+    thumbnail = models.ImageField(_('Thumbnail'), upload_to='property_thumbnails/', null=True, blank=True)
     is_primary = models.BooleanField(_('Primary Image'), default=False)
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
 
@@ -126,41 +129,10 @@ class PropertyImage(models.Model):
         verbose_name_plural = _('Property Images')
 
 class PropertyVideo(models.Model):
-    PROCESSING_STATUS = [
-        ('pending', _('Pending Processing')),
-        ('processed', _('Processed')),
-        ('failed', _('Processing Failed')),
-    ]
-    
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name='videos',
-        verbose_name=_('Property')
-    )
-    video_file = models.FileField(
-        _('Video'),
-        upload_to='property_videos/',
-        help_text=_('Upload MP4/MOV file for 360 view (max 500MB)')
-    )
-    thumbnail = models.ImageField(
-        _('Video Thumbnail'),
-        upload_to='video_thumbnails/',
-        null=True,
-        blank=True,
-        help_text=_('Automatically generated video thumbnail')
-    )
-    processing_status = models.CharField(
-        _('Processing Status'),
-        max_length=20,
-        choices=PROCESSING_STATUS,
-        default='pending'
-    )
-    duration = models.PositiveIntegerField(
-        _('Duration (seconds)'),
-        blank=True,
-        null=True
-    )
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='videos')
+    video_file = models.FileField(_('Video'), upload_to='property_videos/')
+    thumbnail = models.ImageField(_('Video Thumbnail'), upload_to='video_thumbnails/', null=True, blank=True)
+    duration = models.PositiveIntegerField(_('Duration (seconds)'), blank=True, null=True)
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated at'), auto_now=True)
 
@@ -186,27 +158,10 @@ class ServiceSubscription(models.Model):
         ('purchase', _('Purchase Processing')),
     ]
     
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscriptions',
-        verbose_name=_('User')
-    )
-    service_type = models.CharField(
-        _('Service Type'),
-        max_length=20,
-        choices=SERVICE_TYPES
-    )
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name='subscriptions',
-        verbose_name=_('Property')
-    )
-    valid_until = models.DateTimeField(
-        _('Valid Until'),
-        help_text=_('Subscription expiration date')
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
+    service_type = models.CharField(_('Service Type'), max_length=20, choices=SERVICE_TYPES)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='subscriptions')
+    valid_until = models.DateTimeField(_('Valid Until'))
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
 
     class Meta:
@@ -227,43 +182,13 @@ class Transaction(models.Model):
         ('purchase', _('Purchase Payment')),
     ]
     
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='transactions',
-        verbose_name=_('User')
-    )
-    transaction_type = models.CharField(
-        _('Type'),
-        max_length=20,
-        choices=TRANSACTION_TYPES
-    )
-    amount = models.DecimalField(
-        _('Amount'),
-        max_digits=10,
-        decimal_places=2
-    )
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name=_('Property')
-    )
-    subscription = models.ForeignKey(
-        ServiceSubscription,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name=_('Service Subscription')
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(_('Type'), max_length=20, choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)
+    property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, blank=True)
+    subscription = models.ForeignKey(ServiceSubscription, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
-    payment_id = models.CharField(
-        _('Payment ID'),
-        max_length=255,
-        unique=True,
-        help_text=_('Unique identifier from payment processor')
-    )
+    payment_id = models.CharField(_('Payment ID'), max_length=255, unique=True)
 
     class Meta:
         verbose_name = _('Transaction')
@@ -271,68 +196,45 @@ class Transaction(models.Model):
         ordering = ['-created_at']
 
 class RentalContract(models.Model):
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name='rental_contracts',
-        verbose_name=_('Property')
-    )
-    tenant = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='rental_contracts',
-        verbose_name=_('Tenant')
-    )
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='rental_contracts')
+    tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rental_contracts')
     start_date = models.DateField(_('Start Date'))
     end_date = models.DateField(_('End Date'))
-    monthly_rent = models.DecimalField(
-        _('Monthly Rent'),
-        max_digits=10,
-        decimal_places=2
-    )
-    security_deposit = models.DecimalField(
-        _('Security Deposit'),
-        max_digits=10,
-        decimal_places=2
-    )
+    monthly_rent = models.DecimalField(_('Monthly Rent'), max_digits=10, decimal_places=2)
+    security_deposit = models.DecimalField(_('Security Deposit'), max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
     is_active = models.BooleanField(_('Active'), default=True)
 
     def total_fees(self):
-        return self.transactions.aggregate(
-            total=models.Sum('amount')
-        )['total'] or 0
+        return self.transactions.aggregate(total=models.Sum('amount'))['total'] or 0
 
     class Meta:
         verbose_name = _('Rental Contract')
         verbose_name_plural = _('Rental Contracts')
 
 class SaleContract(models.Model):
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name='sale_contracts',
-        verbose_name=_('Property')
-    )
-    buyer = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='purchase_contracts',
-        verbose_name=_('Buyer')
-    )
-    sale_price = models.DecimalField(
-        _('Sale Price'),
-        max_digits=10,
-        decimal_places=2
-    )
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='sale_contracts')
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_contracts')
+    sale_price = models.DecimalField(_('Sale Price'), max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
     is_completed = models.BooleanField(_('Completed'), default=False)
 
     def total_fees(self):
-        return self.transactions.aggregate(
-            total=models.Sum('amount')
-        )['total'] or 0
+        return self.transactions.aggregate(total=models.Sum('amount'))['total'] or 0
 
     class Meta:
         verbose_name = _('Sale Contract')
         verbose_name_plural = _('Sale Contracts')
+
+class PropertyInterest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='interests')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='interests')
+    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'property')
+        verbose_name = _('Property Interest')
+        verbose_name_plural = _('Property Interests')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.property.title}"
