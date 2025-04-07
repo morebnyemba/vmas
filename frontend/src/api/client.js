@@ -1,49 +1,54 @@
 import axios from 'axios';
+import { refreshToken, clearAuthTokens } from './auth';
+
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1/',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true
 });
 
-// Request interceptor for auth token
+// Request interceptor
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
-// Response interceptor with token refresh logic
+// Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     
-    // If 401 and we haven't already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const refresh = localStorage.getItem('refresh_token');
-        if (!refresh) throw new Error('No refresh token');
-        
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}core/auth/token/refresh/`, { refresh });
-        localStorage.setItem('access_token', response.data.access);
-        originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, clear tokens and redirect to login
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/signin';
-        return Promise.reject(refreshError);
-      }
+    // Skip retry for these cases
+    if (
+      error.response?.status !== 401 || 
+      originalRequest._retry || 
+      originalRequest.url.includes('auth/token')
+    ) {
+      return Promise.reject(error);
     }
+
+    originalRequest._retry = true;
     
-    return Promise.reject(error);
+    try {
+      const { access } = await refreshToken();
+      originalRequest.headers.Authorization = `Bearer ${access}`;
+      return apiClient(originalRequest);
+    } catch (refreshError) {
+      clearAuthTokens();
+      if (window.location.pathname !== '/signin') {
+        window.location.href = '/signin';
+      }
+      return Promise.reject(refreshError);
+    }
   }
 );
 
