@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -7,9 +9,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 
 export function Hero() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Initialize state from URL parameters
+  const [listingType, setListingType] = useState(searchParams.get('listing_type') || '');
+  const [location, setLocation] = useState(searchParams.get('location') || '');
+  const [propertyType, setPropertyType] = useState(searchParams.get('property_type') || '');
+
+  const navigateToProperties = () => {
+    const params = new URLSearchParams();
+    if (listingType) params.set('listing_type', listingType);
+    if (location) params.set('location', location);
+    if (propertyType) params.set('property_type', propertyType);
+    navigate(`/properties?${params.toString()}`);
+  };
+
+  const whatsappMessage = `Hie there, I'm coming from your platform and want to enquire about properties. 
+I'm looking to ${listingType || 'buy/rent'} a ${propertyType || 'property'} in ${location || 'your area'}.`;
+
   return (
     <section className="relative h-screen w-full">
       {/* Background Image with Blue Overlay */}
@@ -41,7 +61,10 @@ export function Hero() {
                 {/* Transaction Type */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-blue-50">Transaction Type</label>
-                  <Select>
+                  <Select 
+                    value={listingType}
+                    onValueChange={setListingType}
+                  >
                     <SelectTrigger className="bg-blue-50/80 text-blue-900 hover:bg-blue-100">
                       <SelectValue placeholder="Buy or Rent?" />
                     </SelectTrigger>
@@ -58,13 +81,18 @@ export function Hero() {
                   <Input
                     placeholder="Enter area or city"
                     className="bg-blue-50/80 text-blue-900 placeholder-blue-500 focus:border-blue-300"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                   />
                 </div>
 
                 {/* Property Type */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-blue-50">Property Type</label>
-                  <Select>
+                  <Select 
+                    value={propertyType}
+                    onValueChange={setPropertyType}
+                  >
                     <SelectTrigger className="bg-blue-50/80 text-blue-900 hover:bg-blue-100">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
@@ -80,14 +108,24 @@ export function Hero() {
 
               {/* Action Buttons */}
               <div className="mt-6 grid gap-3 md:grid-cols-2">
-                <Button className="h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700">
+                <Button 
+                  onClick={navigateToProperties}
+                  className="h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700"
+                >
                   Explore Properties
                 </Button>
                 <Button
+                  asChild
                   variant="outline"
                   className="h-12 border-2 border-blue-200 text-blue-900 hover:bg-blue-50/50"
                 >
-                  Connect with Agent
+                  <a 
+                    href={`https://wa.me/263779752635?text=${encodeURIComponent(whatsappMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Connect with Agent
+                  </a>
                 </Button>
               </div>
             </div>

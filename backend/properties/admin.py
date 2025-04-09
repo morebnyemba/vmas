@@ -1,4 +1,5 @@
-# project_root/your_app_name/admin.py
+# properties/admin.py
+
 
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
@@ -9,6 +10,7 @@ from .models import (
 )
 # Assuming your core models User and Agency are registered elsewhere (e.g., in a 'core' app)
 # If not, you might need to register them here or in their own app's admin.py
+
 
 @admin.register(PlaceOfInterest)
 class PlaceOfInterestAdmin(admin.ModelAdmin):
@@ -25,16 +27,19 @@ class PropertyImageInline(admin.TabularInline): # Or admin.StackedInline for mor
     readonly_fields = ('thumbnail',) # Assuming thumbnail is auto-generated or managed elsewhere
     fields = ('image', 'thumbnail', 'is_primary')
 
+
 class PropertyVideoInline(admin.TabularInline):
     model = PropertyVideo
     extra = 1
     readonly_fields = ('thumbnail', 'duration') # Assuming these are processed/set elsewhere
     fields = ('video_file', 'thumbnail', 'duration')
 
+
 class PropertyPlaceOfInterestInline(admin.TabularInline):
     model = PropertyPlaceOfInterest
     extra = 1
     autocomplete_fields = ('place',) # Makes selecting places easier if you have many
+
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
@@ -45,6 +50,7 @@ class PropertyAdmin(admin.ModelAdmin):
     autocomplete_fields = ('owner', 'listing_agency') # Assumes User and Agency admins have search_fields configured
     list_editable = ('status', 'featured') # Allow editing these directly in the list view
     list_per_page = 25
+
 
     fieldsets = (
         (_('Basic Information'), {
@@ -67,18 +73,24 @@ class PropertyAdmin(admin.ModelAdmin):
     # Add the inlines defined above
     inlines = [PropertyPlaceOfInterestInline, PropertyImageInline, PropertyVideoInline]
 
+
     ordering = ('-created_at',)
+
 
     # Optional: Add custom actions
     # def make_featured(self, request, queryset):
     #     queryset.update(featured=True)
     # make_featured.short_description = _("Mark selected properties as featured")
 
+
     # def remove_featured(self, request, queryset):
     #     queryset.update(featured=False)
     # remove_featured.short_description = _("Remove featured status from selected properties")
 
+
     # actions = [make_featured, remove_featured]
+
+
 
 
 @admin.register(PropertyPlaceOfInterest)
@@ -89,6 +101,7 @@ class PropertyPlaceOfInterestAdmin(admin.ModelAdmin):
     autocomplete_fields = ('property', 'place')
     ordering = ('property', 'distance')
 
+
 @admin.register(PropertyImage)
 class PropertyImageAdmin(admin.ModelAdmin):
     list_display = ('property', 'image_preview', 'is_primary', 'created_at')
@@ -97,6 +110,7 @@ class PropertyImageAdmin(admin.ModelAdmin):
     readonly_fields = ('thumbnail', 'created_at') # Assuming thumbnail is auto-generated
     autocomplete_fields = ('property',)
     ordering = ('property', '-is_primary', '-created_at')
+
 
     def image_preview(self, obj):
         from django.utils.html import format_html
@@ -107,6 +121,7 @@ class PropertyImageAdmin(admin.ModelAdmin):
         return _("No Image")
     image_preview.short_description = _('Preview')
 
+
 @admin.register(PropertyVideo)
 class PropertyVideoAdmin(admin.ModelAdmin):
     list_display = ('property', 'video_file', 'thumbnail_preview', 'duration', 'created_at')
@@ -116,12 +131,14 @@ class PropertyVideoAdmin(admin.ModelAdmin):
     autocomplete_fields = ('property',)
     ordering = ('property', '-created_at')
 
+
     def thumbnail_preview(self, obj):
         from django.utils.html import format_html
         if obj.thumbnail:
             return format_html('<img src="{}" style="max-height: 50px; max-width: 100px;" />', obj.thumbnail.url)
         return _("No Thumbnail")
     thumbnail_preview.short_description = _('Thumbnail')
+
 
 @admin.register(ServiceSubscription)
 class ServiceSubscriptionAdmin(admin.ModelAdmin):
@@ -132,11 +149,14 @@ class ServiceSubscriptionAdmin(admin.ModelAdmin):
     autocomplete_fields = ('user', 'property')
     ordering = ('-valid_until',)
 
+
     # Need to make the method boolean for display in admin
     def is_active(self, obj):
         return obj.is_active()
     is_active.boolean = True
     is_active.short_description = _('Is Active?') # Column header
+
+
 
 
 @admin.register(Transaction)
@@ -149,6 +169,7 @@ class TransactionAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at' # Adds date drill-down navigation
     ordering = ('-created_at',)
 
+
 @admin.register(RentalContract)
 class RentalContractAdmin(admin.ModelAdmin):
     list_display = ('property', 'tenant', 'start_date', 'end_date', 'monthly_rent', 'is_active', 'created_at')
@@ -159,6 +180,7 @@ class RentalContractAdmin(admin.ModelAdmin):
     date_hierarchy = 'start_date'
     ordering = ('-start_date',)
 
+
 @admin.register(SaleContract)
 class SaleContractAdmin(admin.ModelAdmin):
     list_display = ('property', 'buyer', 'sale_price', 'is_completed', 'created_at')
@@ -168,6 +190,7 @@ class SaleContractAdmin(admin.ModelAdmin):
     autocomplete_fields = ('property', 'buyer')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
+
 
 @admin.register(PropertyInterest)
 class PropertyInterestAdmin(admin.ModelAdmin):

@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/v1/', include([
         path('core/', include('core.urls')),
         path('properties/', include('properties.urls')),
+        path('payments/', include('payments.urls')),
     ])),
     path('status/', health_check, name='health-check'),
 ]

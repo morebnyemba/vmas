@@ -17,6 +17,7 @@ from .serializers import (
     SaleContractSerializer, ServiceSubscriptionSerializer
 )
 
+
 class PropertyFilter(FilterSet):
     min_price = NumberFilter(field_name="price", lookup_expr='gte')
     max_price = NumberFilter(field_name="price", lookup_expr='lte')
@@ -33,6 +34,7 @@ class PropertyFilter(FilterSet):
             'listing_type'
         ]
 
+
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     A ViewSet for listing and retrieving properties, with additional actions for media uploads.
@@ -44,10 +46,12 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['-created_at']
     permission_classes = [permissions.AllowAny]
 
+
     def get_serializer_class(self):
         if self.action == 'list':
             return PublicPropertyListSerializer
         return PropertyDetailSerializer
+
 
     def get_queryset(self):
         base_queryset = Property.objects.all()
@@ -57,6 +61,7 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
             'images', 'videos', 'property_places__place',
             'rental_contracts', 'sale_contracts'
         )
+
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser],
             parser_classes=[MultiPartParser, FormParser])
@@ -114,6 +119,7 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+
 # Other ViewSets (PropertyInterestViewSet, PaymentViewSet, etc.) remain the same
 class PropertyInterestViewSet(viewsets.ModelViewSet):
     serializer_class = PropertyInterestSerializer
@@ -123,11 +129,13 @@ class PropertyInterestViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at']
     ordering = ['-created_at']
 
+
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
@@ -143,6 +151,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+
 class RentalContractViewSet(viewsets.ModelViewSet):
     serializer_class = RentalContractSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -151,10 +160,12 @@ class RentalContractViewSet(viewsets.ModelViewSet):
     ordering_fields = ['start_date', 'end_date', 'created_at']
     ordering = ['-start_date']
 
+
     def get_queryset(self):
         if self.request.user.is_staff:
             return RentalContract.objects.all()
         return RentalContract.objects.filter(tenant=self.request.user)
+
 
 class SaleContractViewSet(viewsets.ModelViewSet):
     serializer_class = SaleContractSerializer
@@ -164,10 +175,12 @@ class SaleContractViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at']
     ordering = ['-created_at']
 
+
     def get_queryset(self):
         if self.request.user.is_staff:
             return SaleContract.objects.all()
         return SaleContract.objects.filter(buyer=self.request.user)
+
 
 class ServiceSubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = ServiceSubscriptionSerializer
@@ -177,10 +190,12 @@ class ServiceSubscriptionViewSet(viewsets.ModelViewSet):
     ordering_fields = ['valid_until', 'created_at']
     ordering = ['-valid_until']
 
+
     def get_queryset(self):
         if self.request.user.is_staff:
             return ServiceSubscription.objects.all()
         return ServiceSubscription.objects.filter(user=self.request.user)
+
 
 class PropertyPlaceOfInterestViewSet(viewsets.ModelViewSet):
     serializer_class = PlaceOfInterestSerializer

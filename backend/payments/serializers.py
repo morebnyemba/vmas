@@ -1,3 +1,4 @@
+# backend/payments/serializers.py
 # serializers.py
 from rest_framework import serializers
 from .models import Payment, PaynowIntegration
@@ -16,7 +17,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True
     )
-    
+
     class Meta:
         model = Payment
         fields = [
@@ -28,7 +29,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             'id', 'reference', 'status', 'integration',
             'paynow_payment_id', 'poll_url', 'payment_url', 'created_at'
         ]
-    
+
     def to_representation(self, instance):
         """Custom representation for frontend consumption"""
         data = super().to_representation(instance)

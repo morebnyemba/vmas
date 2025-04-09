@@ -11,6 +11,7 @@ from encrypted_model_fields.fields import EncryptedCharField, EncryptedTextField
 from django.db.models import Q
 from phonenumber_field.modelfields import PhoneNumberField
 
+
 class UserManager(BaseUserManager):
     def create_user(self, email, first_name, last_name, password=None, **extra_fields):
         if not email:
@@ -65,6 +66,7 @@ class UserManager(BaseUserManager):
     def get_agency_agents(self, agency):
         return self.filter(agency=agency, role='agent', is_active=True)
 
+
 class License(models.Model):
     LICENSE_TYPES = (
         ('sales', _('Sales License')),
@@ -91,6 +93,7 @@ class License(models.Model):
     def __str__(self):
         return f"{self.get_type_display()} - {self.number}"
 
+
 class Specialization(models.Model):
     name = models.CharField(_('Name'), max_length=100)
     description = models.TextField(_('Description'), blank=True)
@@ -100,6 +103,7 @@ class Specialization(models.Model):
         
     def __str__(self):
         return self.name
+
 
 class Agency(models.Model):
     name = models.CharField(_('Agency Name'), max_length=255, unique=True)
@@ -144,6 +148,7 @@ class Agency(models.Model):
     @property
     def agent_count(self):
         return self.active_agents.count()
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     # Core Fields
@@ -340,6 +345,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return reverse('agent_profile', kwargs={'pk': self.pk})
         return reverse('user_profile', kwargs={'pk': self.pk})
 
+
 class AgentProfile(models.Model):
     user = models.OneToOneField(
         User,
@@ -362,6 +368,7 @@ class AgentProfile(models.Model):
 
     def __str__(self):
         return f"Profile for {self.user.full_name}"
+
 
 class UserActivityLog(models.Model):
     ACTION_CHOICES = (
@@ -391,6 +398,7 @@ class UserActivityLog(models.Model):
     def __str__(self):
         return f"{self.user} - {self.get_action_display()} at {self.timestamp}"
 
+
 class UserDevice(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
     device_name = models.CharField(_('Device Name'), max_length=255)
@@ -407,6 +415,7 @@ class UserDevice(models.Model):
 
     def __str__(self):
         return f"{self.user}'s {self.device_name}"
+
 
 class UserFavorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
@@ -437,13 +446,4 @@ class UserFavorite(models.Model):
 
     def clean(self):
         if not self.property and not self.agent and not self.search_parameters:
-            raise ValidationError(_('Either property, agent or search parameters must be set.'))
-        if self.property and self.agent:
-            raise ValidationError(_('Cannot favorite both property and agent in the same record.'))
-
-    def __str__(self):
-        if self.property:
-            return f"{self.user}'s favorite property {self.property}"
-        elif self.agent:
-            return f"{self.user}'s favorite agent {self.agent}"
-        return f"{self.user}'s saved search"
+            raise ValidationError("At least one of property, agent, or search parameters must be set")

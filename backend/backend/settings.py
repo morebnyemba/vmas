@@ -55,6 +55,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'FORM_RENDERER': 'rest_framework.renderers.JSONRenderer',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -90,6 +91,8 @@ INSTALLED_APPS = [
     'django_json_widget',
     'rest_framework_simplejwt.token_blacklist',
     "payments",
+    "drf_spectacular",
+    
     
 ]
 
