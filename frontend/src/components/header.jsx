@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import {
   Menu, X, Home, Building, HandCoins, ClipboardList,
   Info, Phone, ChevronDown, CircleDollarSign, HomeIcon,
-  HelpCircle, LogIn, Facebook, Twitter, Instagram, Linkedin
+  HelpCircle, LogIn, Facebook, Twitter, Instagram, Linkedin,
+  Users, Handshake, Quote, Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +24,7 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -34,22 +36,46 @@ export function Header() {
       name: "Properties",
       icon: <Building className="h-4 w-4 mr-2" />,
       subLinks: [
+        { name: "All Properties", href: "/properties", icon: <Building className="h-4 w-4 mr-2" /> },
         { name: "Buy", href: "/buy", icon: <CircleDollarSign className="h-4 w-4 mr-2" /> },
         { name: "Sell", href: "/sell", icon: <HandCoins className="h-4 w-4 mr-2" /> },
         { name: "Rent", href: "/rent", icon: <HomeIcon className="h-4 w-4 mr-2" /> },
         { name: "Lease", href: "/lease", icon: <ClipboardList className="h-4 w-4 mr-2" /> }
       ]
     },
-    { name: "About", href: "/about", icon: <Info className="h-4 w-4 mr-2" /> },
+    {
+      name: "About",
+      icon: <Info className="h-4 w-4 mr-2" />,
+      subLinks: [
+        { name: "About Us", href: "/about", icon: <Info className="h-4 w-4 mr-2" /> },
+        { name: "Our Team", href: "/team", icon: <Users className="h-4 w-4 mr-2" /> },
+        { name: "Partners", href: "/partners", icon: <Handshake className="h-4 w-4 mr-2" /> },
+        { name: "Testimonials", href: "/testimonials", icon: <Quote className="h-4 w-4 mr-2" /> },
+        { name: "Careers", href: "/careers", icon: <Briefcase className="h-4 w-4 mr-2" /> }
+      ]
+    },
     { name: "FAQs", href: "/faqs", icon: <HelpCircle className="h-4 w-4 mr-2" /> },
     { name: "Contact", href: "/contact", icon: <Phone className="h-4 w-4 mr-2" /> },
   ];
 
+  const socialLinks = [
+    { icon: <Facebook className="h-4 w-4" />, label: "Facebook", href: "#" },
+    { icon: <Twitter className="h-4 w-4" />, label: "Twitter", href: "#" },
+    { icon: <Instagram className="h-4 w-4" />, label: "Instagram", href: "#" },
+    { icon: <Linkedin className="h-4 w-4" />, label: "LinkedIn", href: "#" },
+  ];
+
   const Logo = () => (
-    <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-      <div className="bg-blue-600 p-2 rounded-lg">
+    <Link 
+      to="/" 
+      className="flex items-center gap-3 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-lg"
+    >
+      <motion.div 
+        whileHover={{ scale: 1.05 }}
+        className="bg-blue-600 p-2 rounded-lg"
+      >
         <Building className="h-6 w-6 text-white" />
-      </div>
+      </motion.div>
       <div className="flex flex-col">
         <span className="text-xl font-bold text-blue-900">Masvingo Properties</span>
         <span className="text-xs text-blue-600 font-medium">Your Real Estate Partner</span>
@@ -61,30 +87,31 @@ export function Header() {
     <div className="sticky top-0 z-50 shadow-sm">
       {/* Top Bar */}
       <div className={cn(
-        "bg-blue-900/95 text-white py-2 px-4 text-xs sm:text-sm transition-all",
-        isScrolled ? "backdrop-blur-lg" : "backdrop-blur-none"
+        "bg-blue-900/95 text-white py-2 px-4 text-xs sm:text-sm transition-all duration-300",
+        isScrolled ? "backdrop-blur-lg py-1" : "backdrop-blur-none"
       )}>
         <div className="container flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+            <a 
+              href="tel:+263772123456" 
+              className="flex items-center gap-2 hover:text-blue-200 transition-colors"
+            >
               <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>24/7 Support: +263 772 123 456</span>
-            </div>
+            </a>
           </div>
           <div className="hidden sm:flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <a href="#" className="hover:text-blue-200 transition-colors">
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a href="#" className="hover:text-blue-200 transition-colors">
-                <Twitter className="h-4 w-4" />
-              </a>
-              <a href="#" className="hover:text-blue-200 transition-colors">
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a href="#" className="hover:text-blue-200 transition-colors">
-                <Linkedin className="h-4 w-4" />
-              </a>
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  aria-label={social.label}
+                  className="hover:text-blue-200 transition-colors p-1 rounded-full hover:bg-white/10"
+                >
+                  {social.icon}
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -92,21 +119,22 @@ export function Header() {
 
       {/* Main Header */}
       <header className={cn(
-        "bg-white/95 border-b transition-all",
-        isScrolled ? "backdrop-blur-lg" : "backdrop-blur-none"
+        "bg-white/95 border-b transition-all duration-300",
+        isScrolled ? "backdrop-blur-lg h-16" : "backdrop-blur-none h-20"
       )}>
-        <div className="container flex h-16 sm:h-20 items-center justify-between">
+        <div className="container flex h-full items-center justify-between">
           
           {/* Mobile Header */}
           <div className="flex md:hidden w-full items-center justify-between px-4">
             <Logo />
             <div className="flex items-center gap-2">
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger>
+                <SheetTrigger asChild>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="border-blue-100 bg-blue-50 hover:bg-blue-100 rounded-lg"
+                    className="border-blue-200 bg-blue-50 hover:bg-blue-100 rounded-lg"
+                    aria-label={isOpen ? "Close menu" : "Open menu"}
                   >
                     {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                   </Button>
@@ -121,6 +149,7 @@ export function Header() {
                               <button
                                 onClick={() => setOpenDropdown(openDropdown === link.name ? null : link.name)}
                                 className="flex items-center w-full px-4 py-3 text-sm font-medium text-blue-900 hover:bg-blue-50"
+                                aria-expanded={openDropdown === link.name}
                               >
                                 {link.icon}
                                 {link.name}
@@ -128,7 +157,14 @@ export function Header() {
                                   openDropdown === link.name ? 'rotate-180' : ''
                                 }`} />
                               </button>
-                              {openDropdown === link.name && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ 
+                                  opacity: openDropdown === link.name ? 1 : 0,
+                                  height: openDropdown === link.name ? 'auto' : 0
+                                }}
+                                className="overflow-hidden"
+                              >
                                 <div className="pl-6">
                                   {link.subLinks.map((subLink) => (
                                     <Link
@@ -145,7 +181,7 @@ export function Header() {
                                     </Link>
                                   ))}
                                 </div>
-                              )}
+                              </motion.div>
                             </div>
                           ) : (
                             <Link
@@ -161,14 +197,22 @@ export function Header() {
                       ))}
                     </div>
                     <div className="p-4">
-                      <Link
-                        to="/signin"
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-blue-900 hover:bg-blue-50 rounded-lg"
-                      >
-                        <LogIn className="h-4 w-4" />
-                        Sign In
-                      </Link>
-                      <div className="mt-4 pt-4 text-sm text-blue-600 border-t">
+                      <Button className="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
+                        Get Started
+                      </Button>
+                      <div className="flex justify-center gap-4 mb-4">
+                        {socialLinks.map((social) => (
+                          <a
+                            key={social.label}
+                            href={social.href}
+                            aria-label={social.label}
+                            className="text-blue-600 hover:text-blue-700 transition-colors p-1 rounded-full hover:bg-blue-50"
+                          >
+                            {social.icon}
+                          </a>
+                        ))}
+                      </div>
+                      <div className="pt-4 text-sm text-center text-blue-600 border-t">
                         © 2024 Masvingo Properties
                       </div>
                     </div>
@@ -182,26 +226,29 @@ export function Header() {
           <div className="hidden md:flex w-full items-center justify-between">
             <Logo />
             
-            <nav className="flex items-center gap-2">
+            <nav className="flex items-center gap-1">
               {navLinks.map((link) => (
                 link.subLinks ? (
                   <DropdownMenu key={link.name}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="text-blue-900 hover:text-blue-600 hover:bg-blue-50 gap-2 px-4 py-6 rounded-none"
+                        className="text-blue-900 hover:text-blue-700 hover:bg-blue-50 gap-2 px-4 py-6 rounded-none data-[state=open]:bg-blue-50"
                       >
                         {link.icon}
                         {link.name}
                         <ChevronDown className="h-4 w-4 ml-1" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="min-w-[240px] border-blue-50 shadow-lg">
+                    <DropdownMenuContent 
+                      className="min-w-[240px] border-blue-100 shadow-lg"
+                      align="start"
+                    >
                       {link.subLinks.map((subLink) => (
                         <DropdownMenuItem key={subLink.name} asChild>
                           <Link
                             to={subLink.href}
-                            className="flex items-center px-4 py-3 hover:bg-blue-50 gap-2"
+                            className="flex items-center px-4 py-3 hover:bg-blue-50 gap-2 transition-colors"
                           >
                             {subLink.icon}
                             <span className="font-medium text-blue-900">{subLink.name}</span>
@@ -215,7 +262,7 @@ export function Header() {
                     key={link.name}
                     variant="ghost"
                     asChild
-                    className="text-blue-900 hover:text-blue-600 hover:bg-blue-50 gap-2 px-4 py-6 rounded-none"
+                    className="text-blue-900 hover:text-blue-700 hover:bg-blue-50 gap-2 px-4 py-6 rounded-none"
                   >
                     <Link to={link.href}>
                       {link.icon}
@@ -227,12 +274,14 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-4">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 shadow-lg">
-                Get Started
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 shadow-lg">
+                  Get Started
+                </Button>
+              </motion.div>
               <Button
                 variant="outline"
-                className="border-blue-200 text-blue-900 hover:bg-blue-50 gap-2"
+                className="border-blue-200 text-blue-900 hover:text-blue-700 hover:bg-blue-50 gap-2"
                 asChild
               >
                 <Link to="/signin">

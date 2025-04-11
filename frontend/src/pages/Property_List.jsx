@@ -18,18 +18,39 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import useSEO from '@/hooks/useSeo';
 
 export default function PropertyListing() {
+  const [searchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get('page')) || 1;
+  const locationParam = searchParams.get('location') || '';
+  
+  // SEO Implementation
+  useSEO({
+    title: `${locationParam ? `${locationParam} Properties` : 'Property Listings'} | Visit Masvingo`,
+    description: `Browse ${locationParam ? `${locationParam}'s best` : 'our premium'} real estate listings in Masvingo, Zimbabwe. Find homes, land, and commercial properties.`,
+    url: window.location.href,
+    image: '/images/property-listings-og.jpg',
+    type: 'website',
+    keywords: `${locationParam ? `${locationParam}, ` : ''}Masvingo properties, Zimbabwe real estate, buy property Zimbabwe`,
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": [],
+      "name": "Property Listings",
+      "description": `Available properties in ${locationParam || 'Masvingo'}, Zimbabwe`
+    }
+  });
+
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // Initialize filters from URL parameters
   const initialFilters = {
     listing_type: searchParams.get('listing_type') || '',
-    location: searchParams.get('location') || '',
+    location: locationParam,
     property_type: searchParams.get('property_type') || '',
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
@@ -38,7 +59,7 @@ export default function PropertyListing() {
 
   const [filters, setFilters] = useState(initialFilters);
   const [pagination, setPagination] = useState({
-    page: parseInt(searchParams.get('page')) || 1,
+    page: currentPage,
     page_size: 12,
     total_count: 0
   });
@@ -74,6 +95,39 @@ export default function PropertyListing() {
             ...prev,
             total_count: data.count || 0
           }));
+
+          // Update structured data for SEO
+          const itemList = data.results.map((property, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+              "@type": "Property",
+              "name": property.title,
+              "description": `${property.bedrooms} bedroom ${property.property_type_display} in ${property.city}`,
+              "url": `${window.location.origin}/properties/${property.id}`,
+              "image": property.primary_image?.image_url,
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": property.city,
+                "addressRegion": "Masvingo",
+                "addressCountry": "ZW"
+              },
+              "numberOfRooms": property.bedrooms,
+              "price": property.price,
+              "priceCurrency": "USD"
+            }
+          }));
+          
+          // Update the structured data in the head
+          const script = document.querySelector('script[type="application/ld+json"]');
+          if (script) {
+            const structuredData = JSON.parse(script.text);
+            script.text = JSON.stringify({
+              ...structuredData,
+              itemListElement: itemList,
+              numberOfItems: data.count
+            });
+          }
         } else {
           throw new Error('Invalid data format from API');
         }
@@ -160,12 +214,14 @@ export default function PropertyListing() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header and Filter Section */}
-      <div className="mb-12">
+      <header className="mb-12">
         <h1 className="text-3xl font-bold tracking-tight text-blue-900 mb-3">
-          Find Your Perfect Property
+          {filters.location ? `${filters.location} Property Listings` : 'Find Your Perfect Property'}
         </h1>
         <p className="text-blue-600 mb-6">
-          Browse our selection of premium properties tailored to your needs
+          {filters.location 
+            ? `Browse available properties in ${filters.location}, Masvingo`
+            : 'Explore our selection of premium properties in Masvingo, Zimbabwe'}
         </p>
 
         <Card className="p-6 bg-white border border-blue-100">
@@ -180,7 +236,7 @@ export default function PropertyListing() {
             ]}
           />
         </Card>
-      </div>
+      </header>
 
       {/* Results Count */}
       <div className="mb-8 flex justify-between items-center">
@@ -225,7 +281,7 @@ export default function PropertyListing() {
       ) : (
         <>
           {/* Properties Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {properties.length > 0 ? (
               properties.map(property => (
                 <PropertyCard
@@ -262,18 +318,19 @@ export default function PropertyListing() {
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
           {/* Pagination */}
           {pagination.total_count > pagination.page_size && (
-            <div className="mt-12 flex justify-center">
-              <nav className="flex items-center gap-2">
+            <nav className="mt-12 flex justify-center" aria-label="Pagination">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1}
                   className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -292,6 +349,8 @@ export default function PropertyListing() {
                         size="sm"
                         onClick={() => handlePageChange(i + 1)}
                         className={`w-10 h-10 p-0 ${pagination.page === i + 1 ? 'bg-blue-600 hover:bg-blue-700' : 'border-blue-300 text-blue-700 hover:bg-blue-50'}`}
+                        aria-label={`Go to page ${i + 1}`}
+                        aria-current={pagination.page === i + 1 ? 'page' : undefined}
                       >
                         {i + 1}
                       </Button>
@@ -306,12 +365,13 @@ export default function PropertyListing() {
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page * pagination.page_size >= pagination.total_count}
                   className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                  aria-label="Next page"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-              </nav>
-            </div>
+              </div>
+            </nav>
           )}
         </>
       )}
