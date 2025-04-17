@@ -9,7 +9,8 @@ RUN apk update && apk add \
     pkgconfig \
     gcc \
     musl-dev \
-    bash
+    bash \
+    libmagic  # Add libmagic for python-magic
 
 # Install any needed packages specified in requirements.txt
 COPY requirements.txt /app
@@ -19,4 +20,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # Run the Django development server
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:$PORT"]
