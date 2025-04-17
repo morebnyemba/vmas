@@ -1,10 +1,10 @@
-import { 
-  Bed, 
-  Bath, 
-  Ruler, 
-  MapPin, 
-  Share2, 
-  Phone, 
+import {
+  Bed,
+  Bath,
+  Ruler,
+  MapPin,
+  Share2,
+  Phone,
   Calendar,
   Mail,
   Star,
@@ -16,78 +16,22 @@ import {
   Dumbbell,
   PawPrint
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
+
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPropertyDetails } from '@/api/properties';
-import { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import useSEO from '@/hooks/useSeo';
 
 export default function PropertyDetailPage() {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // SEO Implementation
-  useEffect(() => {
-    if (property) {
-      useSEO({
-        title: `${property.title} | ${property.city ? property.city + ', ' : ''}Masvingo Properties`,
-        description: property.description 
-          ? `${property.description.substring(0, 160)}...` 
-          : `${property.bedrooms} bedroom ${property.property_type_display} in ${property.city || 'Masvingo'}`,
-        url: window.location.href,
-        image: property.primary_image?.image_url || '/images/property-default-og.jpg',
-        type: 'product',
-        keywords: `${property.city || ''}, ${property.property_type_display}, ${property.listing_type_display}, Masvingo real estate`,
-        structuredData: getPropertyStructuredData(property)
-      });
-    }
-  }, [property]);
-
-  const getPropertyStructuredData = (property) => {
-    return {
-      "@context": "https://schema.org",
-      "@type": "Property",
-      "name": property.title,
-      "description": property.description,
-      "image": property.primary_image?.image_url,
-      "url": window.location.href,
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": property.address || "",
-        "addressLocality": property.city || "Masvingo",
-        "addressRegion": property.state || "Masvingo",
-        "postalCode": property.postal_code || "",
-        "addressCountry": "ZW"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": property.latitude || "",
-        "longitude": property.longitude || ""
-      },
-      "numberOfRooms": property.bedrooms,
-      "numberOfBathroomsTotal": property.bathrooms,
-      "floorSize": {
-        "@type": "QuantitativeValue",
-        "value": property.area,
-        "unitCode": "FTK"
-      },
-      "price": property.price,
-      "priceCurrency": "USD",
-      "offers": {
-        "@type": "Offer",
-        "url": window.location.href,
-        "price": property.price,
-        "priceCurrency": "USD",
-        "availability": property.status === "available" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-        "itemCondition": "https://schema.org/NewCondition"
-      }
-    };
-  };
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -111,21 +55,17 @@ export default function PropertyDetailPage() {
         <div className="container py-12 px-4 sm:px-6 lg:px-8">
           <Skeleton className="h-10 w-3/4 mb-6 bg-blue-100" />
           <Skeleton className="aspect-video w-full rounded-xl mb-8 bg-blue-100" />
-          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-8 w-1/4 bg-blue-100" />
-              <Skeleton className="h-4 w-full bg-blue-100" />
-              <Skeleton className="h-4 w-3/4 bg-blue-100" />
-              <Skeleton className="h-4 w-1/2 bg-blue-100" />
-              
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className={`h-4 w-${(3 - i) * 25} bg-blue-100`} />
+              ))}
               <div className="grid grid-cols-2 gap-4">
                 {[...Array(6)].map((_, i) => (
                   <Skeleton key={i} className="h-4 w-full bg-blue-100" />
                 ))}
               </div>
             </div>
-            
             <div className="space-y-6">
               <Skeleton className="h-48 w-full rounded-xl bg-blue-100" />
               <Skeleton className="h-48 w-full rounded-xl bg-blue-100" />
@@ -147,10 +87,7 @@ export default function PropertyDetailPage() {
           </div>
           <h3 className="text-lg font-medium text-blue-900 mb-2">Error loading property</h3>
           <p className="text-blue-600 mb-6">{error}</p>
-          <Button 
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => window.location.reload()}
-          >
+          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => window.location.reload()}>
             Try again
           </Button>
         </div>
@@ -160,10 +97,11 @@ export default function PropertyDetailPage() {
 
   if (!property) return null;
 
-  // Combine primary image with other images if they exist
-  const images = property.primary_image 
-    ? [property.primary_image, ...(property.images || [])] 
+  const images = property.primary_image
+    ? [property.primary_image, ...(property.images || [])]
     : property.images || [];
+
+  const locationDisplay = [property.city, property.state].filter(Boolean).join(', ');
 
   const featureIcons = {
     'wifi': <Wifi className="h-5 w-5 mr-2 text-blue-600" />,
@@ -175,13 +113,11 @@ export default function PropertyDetailPage() {
     'pool': <Layers className="h-5 w-5 mr-2 text-blue-600" />
   };
 
-  // Format location display (city only or city + state if available)
-  const locationDisplay = [property.city, property.state].filter(Boolean).join(', ');
-
   return (
     <div className="bg-blue-50 min-h-screen">
       <div className="container py-12 px-4 sm:px-6 lg:px-8">
-        {/* Property Header */}
+
+        {/* Header */}
         <header className="mb-8">
           <div className="flex justify-between items-start">
             <div>
@@ -194,24 +130,20 @@ export default function PropertyDetailPage() {
               )}
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge className="text-sm bg-green-100 text-green-800 hover:bg-green-100">
-                {property.status_display || 'Available'}
-              </Badge>
-              <Badge className={`text-sm ${property.listing_type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'} hover:bg-opacity-90`}>
+              <Badge className="text-sm bg-green-100 text-green-800">{property.status_display || 'Available'}</Badge>
+              <Badge className={`text-sm ${property.listing_type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
                 {property.listing_type_display || 'For Rent'}
               </Badge>
               {property.featured && (
-                <Badge className="text-sm bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-                  Featured
-                </Badge>
+                <Badge className="text-sm bg-yellow-100 text-yellow-800">Featured</Badge>
               )}
             </div>
           </div>
         </header>
 
-        {/* Image Gallery */}
+        {/* Gallery */}
         {images.length > 0 && (
-          <section className="mb-8" aria-label="Property images">
+          <section className="mb-8">
             <Carousel className="w-full rounded-xl overflow-hidden shadow-lg border border-blue-100">
               <CarouselContent>
                 {images.map((img, index) => (
@@ -242,14 +174,14 @@ export default function PropertyDetailPage() {
           </section>
         )}
 
-        {/* Videos Section */}
-        {property.videos && property.videos.length > 0 && (
-          <section className="mb-8" aria-label="Property videos">
+        {/* Videos */}
+        {property.videos?.length > 0 && (
+          <section className="mb-8">
             <h2 className="text-xl font-semibold text-blue-900 mb-4">Property Videos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {property.videos.map((video, index) => (
                 <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden border border-blue-100">
-                  <video controls className="w-full aspect-video" aria-label={`Property video ${index + 1}`}>
+                  <video controls className="w-full aspect-video">
                     <source src={video.video_url} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
@@ -259,11 +191,10 @@ export default function PropertyDetailPage() {
           </section>
         )}
 
-        {/* Property Details */}
+        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <main className="lg:col-span-2">
-            {/* Price & Quick Facts */}
+            {/* Price & Facts */}
             <article className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-blue-100">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -276,40 +207,23 @@ export default function PropertyDetailPage() {
                     </p>
                   )}
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-blue-400 hover:bg-blue-50"
-                  aria-label="Share this property"
-                >
+                <Button variant="ghost" size="icon" className="text-blue-400 hover:bg-blue-50" aria-label="Share this property">
                   <Share2 className="h-5 w-5" />
                 </Button>
               </div>
 
               <div className="flex flex-wrap gap-4 border-t border-b border-blue-200 py-4 mb-4">
-                <div className="flex items-center text-blue-700">
-                  <Bed className="h-5 w-5 mr-2 text-blue-600" />
-                  <span>{property.bedrooms} {property.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
-                </div>
-                <div className="flex items-center text-blue-700">
-                  <Bath className="h-5 w-5 mr-2 text-blue-600" />
-                  <span>{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
-                </div>
-                {property.area && (
-                  <div className="flex items-center text-blue-700">
-                    <Ruler className="h-5 w-5 mr-2 text-blue-600" />
-                    <span>{property.area.toLocaleString()} sq.ft</span>
-                  </div>
-                )}
+                <div className="flex items-center text-blue-700"><Bed className="h-5 w-5 mr-2 text-blue-600" />{property.bedrooms} {property.bedrooms === 1 ? 'Bed' : 'Beds'}</div>
+                <div className="flex items-center text-blue-700"><Bath className="h-5 w-5 mr-2 text-blue-600" />{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</div>
+                {property.area && <div className="flex items-center text-blue-700"><Ruler className="h-5 w-5 mr-2 text-blue-600" />{property.area.toLocaleString()} sq.ft</div>}
               </div>
 
+              {/* Description */}
               <h3 className="text-xl font-semibold text-blue-900 mb-3">Description</h3>
-              <p className="text-blue-700 mb-4 whitespace-pre-line">
-                {property.description || 'No description available.'}
-              </p>
+              <p className="text-blue-700 mb-4 whitespace-pre-line">{property.description || 'No description available.'}</p>
 
               {/* Features */}
-              {property.features && property.features.length > 0 && (
+              {property.features?.length > 0 && (
                 <>
                   <h3 className="text-xl font-semibold text-blue-900 mb-3">Features</h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -323,8 +237,8 @@ export default function PropertyDetailPage() {
                 </>
               )}
 
-              {/* Property Places */}
-              {property.property_places && property.property_places.length > 0 && (
+              {/* Nearby */}
+              {property.property_places?.length > 0 && (
                 <>
                   <h3 className="text-xl font-semibold text-blue-900 mb-3">Nearby Places</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -341,49 +255,38 @@ export default function PropertyDetailPage() {
             </article>
           </main>
 
-          {/* Sidebar - Agent & Request */}
+          {/* Sidebar */}
           <aside className="space-y-6">
-            {/* Request Viewing */}
             <article className="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">Schedule a Viewing</h3>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 mb-3" aria-label="Book a property tour">
-                <Calendar className="h-5 w-5 mr-2" />
-                Book a Tour
-              </Button>
-              <Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50" aria-label="Call property agent">
-                <Phone className="h-5 w-5 mr-2" />
-                Call Agent
-              </Button>
-              <Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 mt-3" aria-label="Email property agent">
-                <Mail className="h-5 w-5 mr-2" />
-                Email Agent
-              </Button>
-            </article>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 mb-3">
+  <Calendar className="h-5 w-5 mr-2" />
+  Schedule Viewing
+</Button>
 
-            {/* Property Details */}
+<Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50">
+  <Star className="h-5 w-5 mr-2" />
+  Save For Later
+</Button>
+
+<Button variant="outline" className="w-full mt-3 border-green-500 text-green-700 hover:bg-green-50">
+  <FaWhatsapp className="h-5 w-5 mr-2" />
+  Whatsapp Instant Discussion
+</Button>
+
+<Button variant="outline" className="w-full mt-3 border-yellow-400 text-yellow-700 hover:bg-yellow-50">
+  <Home className="h-5 w-5 mr-2" />
+  Claim this Property
+</Button>
+</article>
+
             <article className="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">Property Details</h3>
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-blue-600">Property Type</span>
-                  <span className="font-medium text-blue-900">{property.property_type_display}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-600">Status</span>
-                  <span className="font-medium text-blue-900">{property.status_display}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-600">Listed</span>
-                  <span className="font-medium text-blue-900">
-                    {new Date(property.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-600">Last Updated</span>
-                  <span className="font-medium text-blue-900">
-                    {new Date(property.updated_at).toLocaleDateString()}
-                  </span>
-                </div>
+                <div className="flex justify-between"><span className="text-blue-600">Property Type</span><span className="font-medium text-blue-900">{property.property_type_display}</span></div>
+                <div className="flex justify-between"><span className="text-blue-600">Status</span><span className="font-medium text-blue-900">{property.status_display}</span></div>
+                <div className="flex justify-between"><span className="text-blue-600">Listed</span><span className="font-medium text-blue-900">{new Date(property.created_at).toLocaleDateString()}</span></div>
+                <div className="flex justify-between"><span className="text-blue-600">Last Updated</span><span className="font-medium text-blue-900">{new Date(property.updated_at).toLocaleDateString()}</span></div>
               </div>
             </article>
           </aside>

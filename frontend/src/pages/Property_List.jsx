@@ -24,8 +24,7 @@ export default function PropertyListing() {
   const [searchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get('page')) || 1;
   const locationParam = searchParams.get('location') || '';
-  
-  // SEO Implementation
+
   useSEO({
     title: `${locationParam ? `${locationParam} Properties` : 'Property Listings'} | Visit Masvingo`,
     description: `Browse ${locationParam ? `${locationParam}'s best` : 'our premium'} real estate listings in Masvingo, Zimbabwe. Find homes, land, and commercial properties.`,
@@ -47,7 +46,6 @@ export default function PropertyListing() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Initialize filters from URL parameters
   const initialFilters = {
     listing_type: searchParams.get('listing_type') || '',
     location: locationParam,
@@ -70,14 +68,12 @@ export default function PropertyListing() {
         setLoading(true);
         setError(null);
 
-        // Prepare API params
         const params = {
           ...filters,
           page: pagination.page,
           page_size: pagination.page_size
         };
 
-        // Clean empty params
         Object.keys(params).forEach(key => {
           if (params[key] === '' || params[key] === null) {
             delete params[key];
@@ -96,7 +92,6 @@ export default function PropertyListing() {
             total_count: data.count || 0
           }));
 
-          // Update structured data for SEO
           const itemList = data.results.map((property, index) => ({
             "@type": "ListItem",
             "position": index + 1,
@@ -117,8 +112,7 @@ export default function PropertyListing() {
               "priceCurrency": "USD"
             }
           }));
-          
-          // Update the structured data in the head
+
           const script = document.querySelector('script[type="application/ld+json"]');
           if (script) {
             const structuredData = JSON.parse(script.text);
@@ -152,7 +146,6 @@ export default function PropertyListing() {
     setFilters(updatedFilters);
     setPagination(prev => ({ ...prev, page: 1 }));
 
-    // Update URL with all current filters
     const params = new URLSearchParams();
     for (const key in updatedFilters) {
       if (updatedFilters[key]) {
@@ -164,8 +157,7 @@ export default function PropertyListing() {
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
-    
-    // Update URL with current filters and new page
+
     const params = new URLSearchParams();
     for (const key in filters) {
       if (filters[key]) {
@@ -212,8 +204,7 @@ export default function PropertyListing() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Header and Filter Section */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
       <header className="mb-12">
         <h1 className="text-3xl font-bold tracking-tight text-blue-900 mb-3">
           {filters.location ? `${filters.location} Property Listings` : 'Find Your Perfect Property'}
@@ -224,7 +215,7 @@ export default function PropertyListing() {
             : 'Explore our selection of premium properties in Masvingo, Zimbabwe'}
         </p>
 
-        <Card className="p-6 bg-white border border-blue-100">
+        <Card className="p-6 bg-white border border-blue-100 shadow-md">
           <FilterBar
             onFilterChange={handleFilterChange}
             initialValues={filters}
@@ -238,8 +229,7 @@ export default function PropertyListing() {
         </Card>
       </header>
 
-      {/* Results Count */}
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-blue-900">
             {pagination.total_count} {pagination.total_count === 1 ? 'Property' : 'Properties'} Found
@@ -261,7 +251,6 @@ export default function PropertyListing() {
         )}
       </div>
 
-      {/* Loading State */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(6)].map((_, i) => (
@@ -280,7 +269,6 @@ export default function PropertyListing() {
         </div>
       ) : (
         <>
-          {/* Properties Grid */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {properties.length > 0 ? (
               properties.map(property => (
@@ -320,7 +308,6 @@ export default function PropertyListing() {
             )}
           </section>
 
-          {/* Pagination */}
           {pagination.total_count > pagination.page_size && (
             <nav className="mt-12 flex justify-center" aria-label="Pagination">
               <div className="flex items-center gap-2">
@@ -348,7 +335,7 @@ export default function PropertyListing() {
                         variant={pagination.page === i + 1 ? "default" : "outline"}
                         size="sm"
                         onClick={() => handlePageChange(i + 1)}
-                        className={`w-10 h-10 p-0 ${pagination.page === i + 1 ? 'bg-blue-600 hover:bg-blue-700' : 'border-blue-300 text-blue-700 hover:bg-blue-50'}`}
+                        className={`w-10 h-10 p-0 ${pagination.page === i + 1 ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'border-blue-300 text-blue-700 hover:bg-blue-50'}`}
                         aria-label={`Go to page ${i + 1}`}
                         aria-current={pagination.page === i + 1 ? 'page' : undefined}
                       >

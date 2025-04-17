@@ -2,6 +2,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
 from .models import Payment, PaynowIntegration
 from .serializers import PaymentSerializer, PaynowIntegrationSerializer
 
@@ -17,12 +18,11 @@ class PaymentCreateAPIView(generics.CreateAPIView):
     queryset = Payment.objects.all()
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-        # Initiate Paynow payment after saving the initial payment object
-        serializer.instance.initiate_paynow_payment()
-        # The initiate_paynow_payment method in the model will save the instance
-        # again after interacting with Paynow.
+        payment = serializer.save(user=self.request.user)
+        payment.full_clean()
+        payment.initiate_paynow_payment()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -44,27 +44,36 @@ class PaymentRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 class PaymentWebhookAPIView(generics.GenericAPIView):
-    """
-    Endpoint to receive Paynow webhook notifications.
-    You'll need to implement the logic to verify the webhook signature
-    and update your Payment model based on the received data.
-    Consult the Paynow SDK documentation for webhook verification.
-    """
     def post(self, request, *args, **kwargs):
-        # Implement webhook verification and processing here
-        # Example (you'll need to adapt this based on Paynow's requirements):
-        # if paynow.verify_signature(request.POST, your_secret_key):
-        #     payment_reference = request.POST.get('reference')
-        #     status = request.POST.get('status')
-        #     # Update your Payment model based on the status
-        #     try:
-        #         payment = Payment.objects.get(reference=payment_reference)
-        #         payment.status = status
-        #         payment.save()
-        #         return Response(status=status.HTTP_200_OK)
-        #     except Payment.DoesNotExist:
-        #         return Response("Payment not found", status=status.HTTP_404_NOT_FOUND)
-        # else:
-        #     return Response("Invalid signature", status=status.HTTP_400_BAD_REQUEST)
-        print("Paynow Webhook Received:", request.POST) # For debugging
-        return Response(status=status.HTTP_200_OK)
+        payload = request.data
+        try:
+            paynow_ref = payload['paynowReference']
+            payment_status = payload['status']
+            amount = float(payload['amount'])
+
+            payment = Payment.objects.get(
+                paynow_payment_id=paynow_ref,
+                amount=amount
+            )
+
+            status_map = {
+                'paid': 'Paid',
+                'awaiting_delivery': 'Sent',
+                'cancelled': 'Cancelled',
+                'failed': 'Failed'
+            }
+            
+            new_status = status_map.get(payment_status.lower(), 'Failed')
+            payment.status = new_status
+            payment.save()
+
+            return Response(status=status.HTTP_200_OK)
+
+        except KeyError as e:
+            return Response(f"Missing parameter: {str(e)}", status=status.HTTP_400_BAD_REQUEST)
+        except Payment.DoesNotExist:
+            return Response("Payment not found", status=status.HTTP_404_NOT_FOUND)
+        except ValueError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
