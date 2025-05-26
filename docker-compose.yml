@@ -1,0 +1,166 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: vmas_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USER:-vmasuser}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-vmaspassword}
+      - POSTGRES_DB=${DB_NAME:-vmasdb}
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vmasuser} -d ${DB_NAME:-vmasdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vmas_redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: vmas_backend
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?err_django_secret_key_not_set}
+      - DJANGO_FIELD_ENCRYPTION_KEY=${DJANGO_FIELD_ENCRYPTION_KEY:?err_django_field_encryption_key_not_set}
+      - DATABASE_URL=postgres://${DB_USER:-vmasuser}:${DB_PASSWORD:-vmaspassword}@db:5432/${DB_NAME:-vmasdb}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=backend.settings
+      - DEBUG=False
+      - ALLOWED_HOSTS=admin.visitmasvingo.com,localhost,127.0.0.1
+      - CORS_ALLOWED_ORIGINS=https://visitmasvingo.com
+      - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME:-admin}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD:-password}
+      - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL:-admin@example.com}
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+      - EMAIL_HOST=${EMAIL_HOST:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-webmaster@localhost}
+    volumes:
+      - static_volume:/app/staticfiles # Ensures Nginx on host can access these if mapped
+      - media_volume:/app/mediafiles   # Ensures Nginx on host can access these if mapped
+      # If celery beat needs to clear the beat pidfile from the same volume
+      # - celery_beat_pid:/app/ # Or a more specific path for the pidfile if needed
+    ports: # Map to localhost for Nginx reverse proxy on host
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py create_superuser_with_password --username \"$$DJANGO_SUPERUSER_USERNAME\" --password \"$$DJANGO_SUPERUSER_PASSWORD\" --email \"$$DJANGO_SUPERUSER_EMAIL\" --noinput || true &&
+             gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+
+  celery_worker:
+    build:
+      context: ./backend
+    container_name: vmas_celery_worker
+    environment: # Same as backend
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?err_django_secret_key_not_set}
+      - DJANGO_FIELD_ENCRYPTION_KEY=${DJANGO_FIELD_ENCRYPTION_KEY:?err_django_field_encryption_key_not_set}
+      - DATABASE_URL=postgres://${DB_USER:-vmasuser}:${DB_PASSWORD:-vmaspassword}@db:5432/${DB_NAME:-vmasdb}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=backend.settings
+      - DEBUG=False
+      - ALLOWED_HOSTS=admin.visitmasvingo.com,localhost,127.0.0.1
+      - CORS_ALLOWED_ORIGINS=https://visitmasvingo.com
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+      - EMAIL_HOST=${EMAIL_HOST:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-webmaster@localhost}
+    volumes:
+      - media_volume:/app/mediafiles # If tasks need access to media files
+      # - celery_beat_pid:/app/ # If worker needs to access/clear pidfile
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+    command: celery -A backend worker -l INFO
+
+  celery_beat: # New Celery Beat service
+    build:
+      context: ./backend
+    container_name: vmas_celery_beat
+    environment: # Same as worker
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?err_django_secret_key_not_set}
+      - DJANGO_FIELD_ENCRYPTION_KEY=${DJANGO_FIELD_ENCRYPTION_KEY:?err_django_field_encryption_key_not_set}
+      - DATABASE_URL=postgres://${DB_USER:-vmasuser}:${DB_PASSWORD:-vmaspassword}@db:5432/${DB_NAME:-vmasdb}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=backend.settings
+      - DEBUG=False
+    volumes: # Mount if beat writes a pid file or needs other shared data
+      # - celery_beat_pid:/app/ # Or a more specific path like /app/run/
+      - static_volume:/app/staticfiles # Not usually needed for beat, but for consistency if any part touches static
+      - media_volume:/app/mediafiles   # Not usually needed for beat
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+    # Remove existing beat pid file before starting to prevent issues on restart
+    command: >
+      sh -c "rm -f /app/celerybeat.pid &&
+             celery -A backend beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile=/app/celerybeat.pid"
+
+  flower: # Optional: Flower for monitoring
+    image: mher/flower
+    container_name: vmas_flower
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_PORT=5555
+      - FLOWER_BASIC_AUTH=${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-adminpass123}
+    ports:
+      - "127.0.0.1:5555:5555"
+    depends_on:
+      - redis
+      - celery_worker
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: https://admin.visitmasvingo.com/api/v1/
+    container_name: vmas_frontend
+    ports: # Map to localhost for Nginx reverse proxy on host
+      - "127.0.0.1:3001:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+  # celery_beat_pid: # Define if you use it for pidfile path
+

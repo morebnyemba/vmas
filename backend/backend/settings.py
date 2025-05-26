@@ -92,6 +92,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     "payments",
     "drf_spectacular",
+    "celery",
+    "django_celery_beat",
+    "django_celery_results",
     
     
 ]
@@ -411,3 +414,19 @@ LOGGING = {
     },
 }
 
+CCELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://redis:6379/0')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://redis:6379/0') # Results are stored here
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_SEND_SENT_EVENT = True
+# Store task results for 1 day (adjust as needed)
+# This allows you to check results via Flower or programmatically
+CELERY_RESULT_EXTENDED = True
+CELERY_RESULT_EXPIRES = env.int('CELERY_RESULT_EXPIRES', default=86400) # 1 day in seconds
+
+
+# Celery Beat Settings
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
