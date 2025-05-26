@@ -4,9 +4,6 @@ import {
   Ruler,
   MapPin,
   Share2,
-  Phone,
-  Calendar,
-  Mail,
   Star,
   Home,
   Layers,
@@ -14,24 +11,46 @@ import {
   Wifi,
   Snowflake,
   Dumbbell,
-  PawPrint
+  PawPrint,
+  Video,
+  Users,
+  Calendar,
+  X
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { format } from 'date-fns';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getPropertyDetails } from '@/api/properties';
+import { toast } from 'sonner';
 
 export default function PropertyDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [time, setTime] = useState('');
+  const [attendees, setAttendees] = useState(1);
+  const [viewingType, setViewingType] = useState('in_person');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  
+  const [date] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow;
+  });
+
+  const availableTimes = viewingType === 'virtual' ? 
+    ['09:00 AM', '10:00 AM', '02:00 PM', '04:00 PM'] :
+    ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', 
+     '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'];
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -48,6 +67,36 @@ export default function PropertyDetailPage() {
 
     fetchProperty();
   }, [id]);
+
+  const handleScheduleViewing = () => {
+    if (!time || attendees < 1 || attendees > 5) {
+      toast.error('Please complete all required fields');
+      return;
+    }
+
+    navigate('/checkout', {
+      state: {
+        amount: property.viewing_fee || 20,
+        currency: 'USD',
+        purpose: 'property_viewing',
+        propertyData: {
+          id: property.id,
+          title: property.title,
+          address: [property.address_line1, property.city, property.state].filter(Boolean).join(', '),
+          price: property.price,
+          listing_type: property.listing_type,
+          image: property.primary_image?.image_url || property.images?.[0]?.image_url
+        },
+        viewingDetails: {
+          date: format(date, 'yyyy-MM-dd'),
+          time,
+          type: viewingType,
+          attendees: parseInt(attendees),
+          specialInstructions: document.getElementById('special-instructions')?.value || ''
+        }
+      }
+    });
+  };
 
   if (loading) {
     return (
@@ -81,9 +130,7 @@ export default function PropertyDetailPage() {
       <div className="bg-blue-50 min-h-screen flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            <X className="h-6 w-6 text-red-600" />
           </div>
           <h3 className="text-lg font-medium text-blue-900 mb-2">Error loading property</h3>
           <p className="text-blue-600 mb-6">{error}</p>
@@ -116,8 +163,6 @@ export default function PropertyDetailPage() {
   return (
     <div className="bg-blue-50 min-h-screen">
       <div className="container py-12 px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
         <header className="mb-8">
           <div className="flex justify-between items-start">
             <div>
@@ -141,7 +186,6 @@ export default function PropertyDetailPage() {
           </div>
         </header>
 
-        {/* Gallery */}
         {images.length > 0 && (
           <section className="mb-8">
             <Carousel className="w-full rounded-xl overflow-hidden shadow-lg border border-blue-100">
@@ -174,27 +218,34 @@ export default function PropertyDetailPage() {
           </section>
         )}
 
-        {/* Videos */}
         {property.videos?.length > 0 && (
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-blue-900 mb-4">Property Videos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {property.videos.map((video, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden border border-blue-100">
-                  <video controls className="w-full aspect-video">
+                <div 
+                  key={index} 
+                  className="bg-white rounded-lg shadow-sm overflow-hidden border border-blue-100 relative group"
+                >
+                  <video 
+                    controls 
+                    className="w-full aspect-video object-cover"
+                    poster={video.thumbnail_url || property.primary_image?.image_url}
+                  >
                     <source src={video.video_url} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
+                  <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                    Video {index + 1}
+                  </div>
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <main className="lg:col-span-2">
-            {/* Price & Facts */}
             <article className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-blue-100">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -218,11 +269,9 @@ export default function PropertyDetailPage() {
                 {property.area && <div className="flex items-center text-blue-700"><Ruler className="h-5 w-5 mr-2 text-blue-600" />{property.area.toLocaleString()} sq.ft</div>}
               </div>
 
-              {/* Description */}
               <h3 className="text-xl font-semibold text-blue-900 mb-3">Description</h3>
               <p className="text-blue-700 mb-4 whitespace-pre-line">{property.description || 'No description available.'}</p>
 
-              {/* Features */}
               {property.features?.length > 0 && (
                 <>
                   <h3 className="text-xl font-semibold text-blue-900 mb-3">Features</h3>
@@ -237,7 +286,6 @@ export default function PropertyDetailPage() {
                 </>
               )}
 
-              {/* Nearby */}
               {property.property_places?.length > 0 && (
                 <>
                   <h3 className="text-xl font-semibold text-blue-900 mb-3">Nearby Places</h3>
@@ -255,30 +303,32 @@ export default function PropertyDetailPage() {
             </article>
           </main>
 
-          {/* Sidebar */}
           <aside className="space-y-6">
             <article className="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">Schedule a Viewing</h3>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 mb-3">
-  <Calendar className="h-5 w-5 mr-2" />
-  Schedule Viewing
-</Button>
+              <Button 
+                onClick={() => setShowScheduleModal(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 mb-3"
+              >
+                <Calendar className="h-5 w-5 mr-2" />
+                Schedule Viewing (${property.viewing_fee || 20} fee)
+              </Button>
 
-<Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50">
-  <Star className="h-5 w-5 mr-2" />
-  Save For Later
-</Button>
+              <Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50">
+                <Star className="h-5 w-5 mr-2" />
+                Save For Later
+              </Button>
 
-<Button variant="outline" className="w-full mt-3 border-green-500 text-green-700 hover:bg-green-50">
-  <FaWhatsapp className="h-5 w-5 mr-2" />
-  Whatsapp Instant Discussion
-</Button>
+              <Button variant="outline" className="w-full mt-3 border-green-500 text-green-700 hover:bg-green-50">
+                <FaWhatsapp className="h-5 w-5 mr-2" />
+                Whatsapp Instant Discussion
+              </Button>
 
-<Button variant="outline" className="w-full mt-3 border-yellow-400 text-yellow-700 hover:bg-yellow-50">
-  <Home className="h-5 w-5 mr-2" />
-  Claim this Property
-</Button>
-</article>
+              <Button variant="outline" className="w-full mt-3 border-yellow-400 text-yellow-700 hover:bg-yellow-50">
+                <Home className="h-5 w-5 mr-2" />
+                Claim this Property
+              </Button>
+            </article>
 
             <article className="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">Property Details</h3>
@@ -291,6 +341,125 @@ export default function PropertyDetailPage() {
             </article>
           </aside>
         </div>
+
+{/* Schedule Viewing Modal */}
+<Dialog open={showScheduleModal} onOpenChange={setShowScheduleModal}>
+  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden flex flex-col">
+    <DialogHeader>
+      <DialogTitle className="text-blue-900">Schedule Your Viewing</DialogTitle>
+      <p className="text-sm text-blue-600 mt-1">
+        Viewings available for {format(date, 'EEEE, MMMM do')} only
+      </p>
+    </DialogHeader>
+
+    {/* Scrollable Content */}
+    <div className="overflow-y-auto flex-1 pr-2 pb-4">
+      <div className="space-y-6">
+        <div className="bg-blue-100 p-4 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-5 w-5 text-blue-700" />
+            <span className="font-medium text-blue-800">
+              {format(date, 'EEEE, MMMM do')}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Video className="h-5 w-5 text-blue-700" />
+            <span className="font-medium text-blue-800">
+              {viewingType === 'virtual' ? 'Virtual' : 'In-Person'} Viewing
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-medium text-blue-800 mb-2">Viewing Type</h4>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant={viewingType === 'in_person' ? 'default' : 'outline'}
+              className={`${viewingType === 'in_person' ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-700'}`}
+              onClick={() => setViewingType('in_person')}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              In-Person
+            </Button>
+            <Button
+              variant={viewingType === 'virtual' ? 'default' : 'outline'}
+              className={`${viewingType === 'virtual' ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-700'}`}
+              onClick={() => setViewingType('virtual')}
+            >
+              <Video className="h-4 w-4 mr-2" />
+              Virtual
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-medium text-blue-800 mb-2">Select Time</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {availableTimes.map((slot) => (
+              <Button
+                key={slot}
+                variant={time === slot ? 'default' : 'outline'}
+                className={`${time === slot ? 'bg-blue-600 hover:bg-blue-700' : 'text-blue-700'}`}
+                onClick={() => setTime(slot)}
+              >
+                {slot}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-medium text-blue-800 mb-2">
+            Number of Attendees (1-5)
+          </h4>
+          <input
+            type="number"
+            min="1"
+            max="5"
+            value={attendees}
+            onChange={(e) => {
+              const value = Math.max(1, Math.min(5, parseInt(e.target.value) || 1));
+              setAttendees(value);
+            }}
+            className="w-full p-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <h4 className="text-sm font-medium text-blue-800 mb-2">
+            Special Instructions (optional)
+          </h4>
+          <textarea
+            id="special-instructions"
+            className="w-full p-2 border border-blue-200 rounded-md h-24 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Any special requests or accessibility needs..."
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Fixed Footer */}
+    <div className="pt-4 border-t border-blue-200 bg-white">
+      <div className="flex justify-between">
+        <Button 
+          variant="outline" 
+          className="border-blue-300 text-blue-700 hover:bg-blue-50"
+          onClick={() => setShowScheduleModal(false)}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleScheduleViewing}
+          disabled={!time || attendees < 1 || attendees > 5}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          Continue to Payment
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
       </div>
     </div>
   );

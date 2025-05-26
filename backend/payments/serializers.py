@@ -1,17 +1,16 @@
-# backend/payments/serializers.py
 from rest_framework import serializers
 from .models import Payment, PaynowIntegration
 
 class PaynowIntegrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaynowIntegration
-        fields = ['id', 'name', 'currency', 'return_url', 'result_url']
+        fields = "__all__"
         read_only_fields = ['id']
 
 class PaymentSerializer(serializers.ModelSerializer):
     integration = PaynowIntegrationSerializer(read_only=True)
     integration_id = serializers.PrimaryKeyRelatedField(
-        queryset=PaynowIntegration.objects.all(),
+        queryset=PaynowIntegration.objects.filter(is_active=True),
         source='integration',
         write_only=True,
         required=True
@@ -31,14 +30,18 @@ class PaymentSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        """Check currency compatibility"""
         integration = data.get('integration')
-        currency = data.get('currency', 'USD')
-        
-        if integration and currency != integration.currency:
-            raise serializers.ValidationError(
-                f"Integration {integration.name} only supports {integration.currency} payments"
-            )
+        currency = data.get('currency', 'USD')  # Defaults to USD
+
+        if integration:
+            if currency != integration.currency:
+                raise serializers.ValidationError(
+                    f"Integration '{integration.name}' only supports {integration.currency} payments."
+                )
+            if not integration.is_active:
+                raise serializers.ValidationError(
+                    f"Integration '{integration.name}' is not active."
+                )
         return data
 
     def to_representation(self, instance):

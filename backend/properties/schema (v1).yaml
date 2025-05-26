@@ -1,0 +1,4910 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0 (v1)
+paths:
+  /api/v1/core/activity-logs/:
+    get:
+      operationId: api_v1_core_activity_logs_list
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum:
+          - agent_contact
+          - login
+          - logout
+          - password_change
+          - profile_update
+          - property_contact
+          - property_save
+          - property_view
+        description: |-
+          * `login` - Login
+          * `logout` - Logout
+          * `profile_update` - Profile Update
+          * `password_change` - Password Change
+          * `property_view` - Property View
+          * `property_save` - Property Saved
+          * `property_contact` - Property Contact
+          * `agent_contact` - Agent Contact
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserActivityLog'
+          description: ''
+  /api/v1/core/activity-logs/{id}/:
+    get:
+      operationId: api_v1_core_activity_logs_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User Activity Log.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActivityLog'
+          description: ''
+  /api/v1/core/agencies/:
+    get:
+      operationId: api_v1_core_agencies_list
+      parameters:
+      - in: query
+        name: verified
+        schema:
+          type: boolean
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agency'
+          description: ''
+    post:
+      operationId: api_v1_core_agencies_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Agency'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+  /api/v1/core/agencies/{id}/:
+    get:
+      operationId: api_v1_core_agencies_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+    put:
+      operationId: api_v1_core_agencies_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Agency'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+    patch:
+      operationId: api_v1_core_agencies_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAgency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAgency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAgency'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+    delete:
+      operationId: api_v1_core_agencies_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/core/agencies/{id}/add_member/:
+    post:
+      operationId: api_v1_core_agencies_add_member_create
+      description: Add member to agency (owner/admin only)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Agency'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+  /api/v1/core/agencies/{id}/agents/:
+    get:
+      operationId: api_v1_core_agencies_agents_retrieve
+      description: Get all agents for this agency
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+  /api/v1/core/agencies/{id}/verify/:
+    post:
+      operationId: api_v1_core_agencies_verify_create
+      description: Verify agency (admin only)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this agency.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Agency'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Agency'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agency'
+          description: ''
+  /api/v1/core/agent-profiles/:
+    get:
+      operationId: api_v1_core_agent_profiles_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentProfile'
+          description: ''
+    post:
+      operationId: api_v1_core_agent_profiles_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentProfile'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentProfile'
+          description: ''
+  /api/v1/core/agent-profiles/{id}/:
+    get:
+      operationId: api_v1_core_agent_profiles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Agent Profile.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentProfile'
+          description: ''
+    put:
+      operationId: api_v1_core_agent_profiles_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Agent Profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentProfile'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentProfile'
+          description: ''
+    patch:
+      operationId: api_v1_core_agent_profiles_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Agent Profile.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentProfile'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentProfile'
+          description: ''
+    delete:
+      operationId: api_v1_core_agent_profiles_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Agent Profile.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/core/agents/public-profiles/:
+    get:
+      operationId: api_v1_core_agents_public_profiles_retrieve
+      description: Get public profiles of all agents
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentPublicProfile'
+          description: ''
+  /api/v1/core/agents/search/:
+    get:
+      operationId: api_v1_core_agents_search_retrieve
+      description: Search for agents with filters
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSearch'
+          description: ''
+  /api/v1/core/auth/register/:
+    post:
+      operationId: api_v1_core_auth_register_create
+      description: Override create to handle registration differently
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegistration'
+          description: ''
+  /api/v1/core/auth/register/agency/:
+    post:
+      operationId: api_v1_core_auth_register_agency_create
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/core/auth/token/:
+    post:
+      operationId: api_v1_core_auth_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomTokenObtainPair'
+          description: ''
+  /api/v1/core/auth/token/refresh/:
+    post:
+      operationId: api_v1_core_auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/core/auth/token/verify/:
+    post:
+      operationId: api_v1_core_auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/v1/core/favorites/:
+    get:
+      operationId: api_v1_core_favorites_list
+      parameters:
+      - in: query
+        name: agent
+        schema:
+          type: integer
+      - in: query
+        name: property
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserFavorite'
+          description: ''
+    post:
+      operationId: api_v1_core_favorites_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserFavorite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserFavorite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserFavorite'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFavorite'
+          description: ''
+  /api/v1/core/favorites/{id}/:
+    get:
+      operationId: api_v1_core_favorites_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User Favorite.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFavorite'
+          description: ''
+    put:
+      operationId: api_v1_core_favorites_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User Favorite.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserFavorite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserFavorite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserFavorite'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFavorite'
+          description: ''
+    patch:
+      operationId: api_v1_core_favorites_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User Favorite.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserFavorite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserFavorite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserFavorite'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFavorite'
+          description: ''
+    delete:
+      operationId: api_v1_core_favorites_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User Favorite.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/core/licenses/:
+    get:
+      operationId: api_v1_core_licenses_list
+      parameters:
+      - in: query
+        name: state
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+          title: License Type
+          enum:
+          - appraiser
+          - broker
+          - sales
+        description: |-
+          * `sales` - Sales License
+          * `broker` - Broker License
+          * `appraiser` - Appraiser License
+      - in: query
+        name: verified
+        schema:
+          type: boolean
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/License'
+          description: ''
+    post:
+      operationId: api_v1_core_licenses_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/License'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/License'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/License'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+          description: ''
+  /api/v1/core/licenses/{id}/:
+    get:
+      operationId: api_v1_core_licenses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this license.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+          description: ''
+    put:
+      operationId: api_v1_core_licenses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this license.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/License'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/License'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/License'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+          description: ''
+    patch:
+      operationId: api_v1_core_licenses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this license.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLicense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLicense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLicense'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+          description: ''
+    delete:
+      operationId: api_v1_core_licenses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this license.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/core/specializations/:
+    get:
+      operationId: api_v1_core_specializations_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Specialization'
+          description: ''
+  /api/v1/core/specializations/{id}/:
+    get:
+      operationId: api_v1_core_specializations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this specialization.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Specialization'
+          description: ''
+  /api/v1/core/users/:
+    get:
+      operationId: api_v1_core_users_list
+      parameters:
+      - in: query
+        name: agency
+        schema:
+          type: integer
+      - in: query
+        name: agency_verified
+        schema:
+          type: boolean
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - admin
+          - agency_admin
+          - agency_staff
+          - agent
+          - customer
+        description: |-
+          * `customer` - Customer
+          * `admin` - Admin
+          * `agent` - Agent
+          * `agency_admin` - Agency Admin
+          * `agency_staff` - Agency Staff
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: api_v1_core_users_create
+      description: Override create to handle registration differently
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegistration'
+          description: ''
+  /api/v1/core/users/{id}/:
+    get:
+      operationId: api_v1_core_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_v1_core_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_v1_core_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: api_v1_core_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/core/users/{id}/add_license/:
+    post:
+      operationId: api_v1_core_users_add_license_create
+      description: Add license to agent profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LicenseCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LicenseCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseCreate'
+          description: ''
+  /api/v1/core/users/{id}/update_agent_profile/:
+    put:
+      operationId: api_v1_core_users_update_agent_profile_update
+      description: Update agent professional profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentProfileUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentProfileUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentProfileUpdate'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentProfileUpdate'
+          description: ''
+    patch:
+      operationId: api_v1_core_users_update_agent_profile_partial_update
+      description: Update agent professional profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentProfileUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentProfileUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAgentProfileUpdate'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentProfileUpdate'
+          description: ''
+  /api/v1/core/users/{id}/verify_email/:
+    post:
+      operationId: api_v1_core_users_verify_email_create
+      description: Verify user email (admin or self only)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/core/users/{id}/verify_phone/:
+    post:
+      operationId: api_v1_core_users_verify_phone_create
+      description: Verify user phone (admin or self only)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this User.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/core/users/agent_profiles/:
+    get:
+      operationId: api_v1_core_users_agent_profiles_retrieve
+      description: Get public profiles of all agents
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentPublicProfile'
+          description: ''
+  /api/v1/core/users/change_password/:
+    post:
+      operationId: api_v1_core_users_change_password_create
+      description: Change password for current user
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordChange'
+          description: ''
+  /api/v1/core/users/me/:
+    get:
+      operationId: api_v1_core_users_me_retrieve
+      description: Get current user profile with all related data
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/core/users/my_devices/:
+    get:
+      operationId: api_v1_core_users_my_devices_retrieve
+      description: Get current user's trusted devices
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/core/users/search_agents/:
+    get:
+      operationId: api_v1_core_users_search_agents_retrieve
+      description: Search for agents with filters
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentSearch'
+          description: ''
+  /api/v1/payments/payments/:
+    post:
+      operationId: api_v1_payments_payments_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/payments/{reference}/:
+    get:
+      operationId: api_v1_payments_payments_retrieve
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/paynow-integrations/:
+    get:
+      operationId: api_v1_payments_paynow_integrations_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaynowIntegration'
+          description: ''
+  /api/v1/payments/webhook/paynow/:
+    post:
+      operationId: api_v1_payments_webhook_paynow_create
+      tags:
+      - api
+      responses:
+        '200':
+          description: No response body
+  /api/v1/properties/interests/:
+    get:
+      operationId: api_v1_properties_interests_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertyInterest'
+          description: ''
+    post:
+      operationId: api_v1_properties_interests_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertyInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PropertyInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PropertyInterest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyInterest'
+          description: ''
+  /api/v1/properties/interests/{id}/:
+    get:
+      operationId: api_v1_properties_interests_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Interest.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyInterest'
+          description: ''
+    put:
+      operationId: api_v1_properties_interests_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Interest.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertyInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PropertyInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PropertyInterest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyInterest'
+          description: ''
+    patch:
+      operationId: api_v1_properties_interests_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Interest.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPropertyInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPropertyInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPropertyInterest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyInterest'
+          description: ''
+    delete:
+      operationId: api_v1_properties_interests_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Interest.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/properties/payments/:
+    get:
+      operationId: api_v1_properties_payments_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+          description: ''
+    post:
+      operationId: api_v1_properties_payments_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/properties/payments/{id}/:
+    get:
+      operationId: api_v1_properties_payments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Transaction.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    put:
+      operationId: api_v1_properties_payments_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Transaction.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    patch:
+      operationId: api_v1_properties_payments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Transaction.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPayment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPayment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPayment'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    delete:
+      operationId: api_v1_properties_payments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Transaction.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/properties/properties/:
+    get:
+      operationId: api_v1_properties_properties_list
+      description: A ViewSet for listing and retrieving properties, with additional
+        actions for media uploads.
+      parameters:
+      - in: query
+        name: city
+        schema:
+          type: string
+      - in: query
+        name: featured
+        schema:
+          type: boolean
+      - in: query
+        name: listing_type
+        schema:
+          type: string
+          enum:
+          - both
+          - rent
+          - sale
+        description: |-
+          * `sale` - For Sale
+          * `rent` - For Rent
+          * `both` - For Sale and Rent
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_bathrooms
+        schema:
+          type: number
+      - in: query
+        name: min_bedrooms
+        schema:
+          type: integer
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: property_type
+        schema:
+          type: string
+          title: Type
+          enum:
+          - apartment
+          - commercial
+          - house
+          - land
+        description: |-
+          * `apartment` - Apartment
+          * `house` - House
+          * `land` - Land
+          * `commercial` - Commercial
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - available
+          - rented
+          - sold
+          - under_maintenance
+        description: |-
+          * `available` - Available
+          * `sold` - Sold
+          * `rented` - Rented
+          * `under_maintenance` - Under Maintenance
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicPropertyList'
+          description: ''
+  /api/v1/properties/properties/{id}/:
+    get:
+      operationId: api_v1_properties_properties_retrieve
+      description: A ViewSet for listing and retrieving properties, with additional
+        actions for media uploads.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyDetail'
+          description: ''
+  /api/v1/properties/properties/{id}/set_primary_image/:
+    patch:
+      operationId: api_v1_properties_properties_set_primary_image_partial_update
+      description: Set an image as the primary image for a property.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPropertyDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPropertyDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPropertyDetail'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyDetail'
+          description: ''
+  /api/v1/properties/properties/{id}/upload_image/:
+    post:
+      operationId: api_v1_properties_properties_upload_image_create
+      description: Upload an image for a property.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PropertyDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PropertyDetail'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyDetail'
+          description: ''
+  /api/v1/properties/properties/{id}/upload_video/:
+    post:
+      operationId: api_v1_properties_properties_upload_video_create
+      description: Upload a video for a property.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PropertyDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PropertyDetail'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyDetail'
+          description: ''
+  /api/v1/properties/property-places/:
+    get:
+      operationId: api_v1_properties_property_places_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: place
+        schema:
+          type: integer
+      - in: query
+        name: property
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaceOfInterest'
+          description: ''
+    post:
+      operationId: api_v1_properties_property_places_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOfInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlaceOfInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlaceOfInterest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceOfInterest'
+          description: ''
+  /api/v1/properties/property-places/{id}/:
+    get:
+      operationId: api_v1_properties_property_places_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Place of Interest.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceOfInterest'
+          description: ''
+    put:
+      operationId: api_v1_properties_property_places_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Place of Interest.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOfInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlaceOfInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlaceOfInterest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceOfInterest'
+          description: ''
+    patch:
+      operationId: api_v1_properties_property_places_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Place of Interest.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlaceOfInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlaceOfInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlaceOfInterest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceOfInterest'
+          description: ''
+    delete:
+      operationId: api_v1_properties_property_places_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Property Place of Interest.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/properties/rental-contracts/:
+    get:
+      operationId: api_v1_properties_rental_contracts_list
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: property
+        schema:
+          type: integer
+      - in: query
+        name: tenant
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RentalContract'
+          description: ''
+    post:
+      operationId: api_v1_properties_rental_contracts_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalContract'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RentalContract'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RentalContract'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalContract'
+          description: ''
+  /api/v1/properties/rental-contracts/{id}/:
+    get:
+      operationId: api_v1_properties_rental_contracts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Rental Contract.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalContract'
+          description: ''
+    put:
+      operationId: api_v1_properties_rental_contracts_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Rental Contract.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalContract'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RentalContract'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RentalContract'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalContract'
+          description: ''
+    patch:
+      operationId: api_v1_properties_rental_contracts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Rental Contract.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRentalContract'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRentalContract'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRentalContract'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalContract'
+          description: ''
+    delete:
+      operationId: api_v1_properties_rental_contracts_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Rental Contract.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/properties/sale-contracts/:
+    get:
+      operationId: api_v1_properties_sale_contracts_list
+      parameters:
+      - in: query
+        name: buyer
+        schema:
+          type: integer
+      - in: query
+        name: is_completed
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: property
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SaleContract'
+          description: ''
+    post:
+      operationId: api_v1_properties_sale_contracts_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleContract'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaleContract'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaleContract'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleContract'
+          description: ''
+  /api/v1/properties/sale-contracts/{id}/:
+    get:
+      operationId: api_v1_properties_sale_contracts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Contract.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleContract'
+          description: ''
+    put:
+      operationId: api_v1_properties_sale_contracts_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Contract.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleContract'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaleContract'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaleContract'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleContract'
+          description: ''
+    patch:
+      operationId: api_v1_properties_sale_contracts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Contract.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSaleContract'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSaleContract'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSaleContract'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleContract'
+          description: ''
+    delete:
+      operationId: api_v1_properties_sale_contracts_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Contract.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/properties/schema/:
+    get:
+      operationId: api_v1_properties_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/properties/subscriptions/:
+    get:
+      operationId: api_v1_properties_subscriptions_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: property
+        schema:
+          type: integer
+      - in: query
+        name: service_type
+        schema:
+          type: string
+          enum:
+          - purchase
+          - rental
+          - viewing
+        description: |-
+          * `viewing` - Property Viewing Access
+          * `rental` - Rental Processing
+          * `purchase` - Purchase Processing
+      - in: query
+        name: user
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceSubscription'
+          description: ''
+    post:
+      operationId: api_v1_properties_subscriptions_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceSubscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceSubscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceSubscription'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSubscription'
+          description: ''
+  /api/v1/properties/subscriptions/{id}/:
+    get:
+      operationId: api_v1_properties_subscriptions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service Subscription.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSubscription'
+          description: ''
+    put:
+      operationId: api_v1_properties_subscriptions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service Subscription.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceSubscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceSubscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceSubscription'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSubscription'
+          description: ''
+    patch:
+      operationId: api_v1_properties_subscriptions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service Subscription.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceSubscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceSubscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceSubscription'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSubscription'
+          description: ''
+    delete:
+      operationId: api_v1_properties_subscriptions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Service Subscription.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    ActionEnum:
+      enum:
+      - login
+      - logout
+      - profile_update
+      - password_change
+      - property_view
+      - property_save
+      - property_contact
+      - agent_contact
+      type: string
+      description: |-
+        * `login` - Login
+        * `logout` - Logout
+        * `profile_update` - Profile Update
+        * `password_change` - Password Change
+        * `property_view` - Property View
+        * `property_save` - Property Saved
+        * `property_contact` - Property Contact
+        * `agent_contact` - Agent Contact
+    Agency:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Agency Name
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        founded_date:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        service_areas: {}
+        languages:
+          title: Languages Spoken
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        member_count:
+          type: integer
+          readOnly: true
+        active_agents_count:
+          type: integer
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - active_agents_count
+      - created_at
+      - id
+      - member_count
+      - name
+      - updated_at
+      - verified
+      - verified_at
+    AgencyRoleEnum:
+      enum:
+      - agent
+      - manager
+      - admin
+      - owner
+      type: string
+      description: |-
+        * `agent` - Agent
+        * `manager` - Manager
+        * `admin` - Administrator
+        * `owner` - Owner
+    AgentProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        professional_title:
+          type: string
+          maxLength: 100
+        certifications:
+          type: string
+        education:
+          type: string
+        awards:
+          type: string
+          title: Awards & Recognition
+        specialties:
+          type: string
+        testimonial_video:
+          type: string
+          format: uri
+          title: Testimonial Video URL
+          maxLength: 200
+        office_hours: {}
+        appointment_slots:
+          title: Available Appointment Slots
+      required:
+      - id
+    AgentProfileUpdate:
+      type: object
+      properties:
+        professional_title:
+          type: string
+          maxLength: 100
+        certifications:
+          type: string
+        education:
+          type: string
+        awards:
+          type: string
+          title: Awards & Recognition
+        specialties:
+          type: string
+        testimonial_video:
+          type: string
+          format: uri
+          title: Testimonial Video URL
+          maxLength: 200
+        office_hours: {}
+        appointment_slots:
+          title: Available Appointment Slots
+    AgentPublicProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 128
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        languages:
+          title: Languages Spoken
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          nullable: true
+        reviews_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        agency:
+          allOf:
+          - $ref: '#/components/schemas/Agency'
+          readOnly: true
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/License'
+          readOnly: true
+        specializations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Specialization'
+          readOnly: true
+        agent_profile:
+          allOf:
+          - $ref: '#/components/schemas/AgentProfile'
+          readOnly: true
+        service_areas:
+          type: string
+          readOnly: true
+        facebook_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Facebook Profile
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          nullable: true
+          title: LinkedIn Profile
+          maxLength: 200
+        twitter_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Twitter Profile
+          maxLength: 200
+        instagram_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Instagram Profile
+          maxLength: 200
+        average_response_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          title: Average Response Time (hours)
+      required:
+      - agency
+      - agent_profile
+      - first_name
+      - id
+      - last_name
+      - licenses
+      - service_areas
+      - specializations
+    AgentSearch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          nullable: true
+        reviews_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        agency_name:
+          type: string
+          readOnly: true
+        distance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        average_response_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          title: Average Response Time (hours)
+      required:
+      - agency_name
+      - distance
+      - first_name
+      - id
+      - last_name
+    BlankEnum:
+      enum:
+      - ''
+    CustomTokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    GenderEnum:
+      enum:
+      - male
+      - female
+      - other
+      - prefer_not_to_say
+      type: string
+      description: |-
+        * `male` - Male
+        * `female` - Female
+        * `other` - Other
+        * `prefer_not_to_say` - Prefer not to say
+    License:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: string
+          title: License Number
+          maxLength: 100
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          title: License Type
+        state:
+          type: string
+          title: Issuing State
+          maxLength: 100
+        expiry_date:
+          type: string
+          format: date
+        verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        document:
+          type: string
+          format: uri
+          nullable: true
+          title: License Document
+      required:
+      - expiry_date
+      - id
+      - number
+      - state
+      - type
+      - verified
+      - verified_at
+    LicenseCreate:
+      type: object
+      properties:
+        number:
+          type: string
+          title: License Number
+          maxLength: 100
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          title: License Type
+        state:
+          type: string
+          title: Issuing State
+          maxLength: 100
+        expiry_date:
+          type: string
+          format: date
+        document:
+          type: string
+          format: uri
+          nullable: true
+          title: License Document
+      required:
+      - expiry_date
+      - number
+      - state
+      - type
+    ListingTypeEnum:
+      enum:
+      - sale
+      - rent
+      - both
+      type: string
+      description: |-
+        * `sale` - For Sale
+        * `rent` - For Rent
+        * `both` - For Sale and Rent
+    NullEnum:
+      enum:
+      - null
+    PasswordChange:
+      type: object
+      properties:
+        old_password:
+          type: string
+        new_password:
+          type: string
+        confirm_password:
+          type: string
+      required:
+      - confirm_password
+      - new_password
+      - old_password
+    PatchedAgency:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Agency Name
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        website:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        founded_date:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        service_areas: {}
+        languages:
+          title: Languages Spoken
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        member_count:
+          type: integer
+          readOnly: true
+        active_agents_count:
+          type: integer
+          readOnly: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+    PatchedAgentProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        professional_title:
+          type: string
+          maxLength: 100
+        certifications:
+          type: string
+        education:
+          type: string
+        awards:
+          type: string
+          title: Awards & Recognition
+        specialties:
+          type: string
+        testimonial_video:
+          type: string
+          format: uri
+          title: Testimonial Video URL
+          maxLength: 200
+        office_hours: {}
+        appointment_slots:
+          title: Available Appointment Slots
+    PatchedAgentProfileUpdate:
+      type: object
+      properties:
+        professional_title:
+          type: string
+          maxLength: 100
+        certifications:
+          type: string
+        education:
+          type: string
+        awards:
+          type: string
+          title: Awards & Recognition
+        specialties:
+          type: string
+        testimonial_video:
+          type: string
+          format: uri
+          title: Testimonial Video URL
+          maxLength: 200
+        office_hours: {}
+        appointment_slots:
+          title: Available Appointment Slots
+    PatchedLicense:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: string
+          title: License Number
+          maxLength: 100
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          title: License Type
+        state:
+          type: string
+          title: Issuing State
+          maxLength: 100
+        expiry_date:
+          type: string
+          format: date
+        verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        document:
+          type: string
+          format: uri
+          nullable: true
+          title: License Document
+    PatchedPayment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction_type:
+          allOf:
+          - $ref: '#/components/schemas/TransactionTypeEnum'
+          title: Type
+        transaction_type_display:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        property:
+          type: integer
+          nullable: true
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        payment_id:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPlaceOfInterest:
+      type: object
+      properties:
+        place:
+          type: integer
+          readOnly: true
+        place_name:
+          type: string
+          readOnly: true
+        place_type_display:
+          type: string
+          readOnly: true
+        distance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+          title: Distance (miles)
+    PatchedPropertyDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        property_type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyTypeEnum'
+          title: Type
+        property_type_display:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status7b4Enum'
+        status_display:
+          type: string
+          readOnly: true
+        listing_type:
+          $ref: '#/components/schemas/ListingTypeEnum'
+        listing_type_display:
+          type: string
+          readOnly: true
+        featured:
+          type: boolean
+          title: Featured Property
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        zip_code:
+          type: string
+          maxLength: 20
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        viewing_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        bathrooms:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        area:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Area (sq ft)
+        owner:
+          type: integer
+        owner_name:
+          type: string
+          readOnly: true
+        listing_agency:
+          type: integer
+          nullable: true
+        listing_agency_name:
+          type: string
+          readOnly: true
+          nullable: true
+        property_places:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceOfInterest'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyImage'
+          readOnly: true
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyVideo'
+          readOnly: true
+        primary_image:
+          type: string
+          readOnly: true
+    PatchedPropertyInterest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedRentalContract:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        tenant:
+          type: integer
+        tenant_name:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        monthly_rent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        security_deposit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedSaleContract:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        buyer:
+          type: integer
+        buyer_name:
+          type: string
+          readOnly: true
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedServiceSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        service_type:
+          $ref: '#/components/schemas/ServiceTypeEnum'
+        service_type_display:
+          type: string
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        user:
+          type: integer
+        user_name:
+          type: string
+          readOnly: true
+        valid_until:
+          type: string
+          format: date-time
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+        confirm_password:
+          type: string
+          writeOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 128
+        alternate_phone:
+          type: string
+          nullable: true
+          maxLength: 128
+        is_active:
+          type: boolean
+          title: Active
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        cover_photo:
+          type: string
+          format: uri
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        gender:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        email_verified:
+          type: boolean
+          readOnly: true
+        phone_verified:
+          type: boolean
+          readOnly: true
+        tfa_enabled:
+          type: boolean
+          title: 2FA Enabled
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: Staff status
+        notification_preferences: {}
+        communication_preferences: {}
+        agency:
+          allOf:
+          - $ref: '#/components/schemas/Agency'
+          readOnly: true
+        agency_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        agency_role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AgencyRoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        languages:
+          title: Languages Spoken
+        service_areas: {}
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        reviews_count:
+          type: integer
+          readOnly: true
+        facebook_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Facebook Profile
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          nullable: true
+          title: LinkedIn Profile
+          maxLength: 200
+        twitter_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Twitter Profile
+          maxLength: 200
+        instagram_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Instagram Profile
+          maxLength: 200
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/License'
+          readOnly: true
+        specializations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Specialization'
+          readOnly: true
+        agent_profile:
+          allOf:
+          - $ref: '#/components/schemas/AgentProfile'
+          readOnly: true
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDevice'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        agency_verified:
+          type: boolean
+          readOnly: true
+        average_response_time:
+          type: integer
+          readOnly: true
+          nullable: true
+        is_online:
+          type: boolean
+          readOnly: true
+        verification_documents:
+          type: string
+          format: uri
+          writeOnly: true
+          nullable: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_activity:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_seen:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedUserFavorite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        property:
+          type: integer
+          nullable: true
+        property_title:
+          type: string
+          readOnly: true
+        agent:
+          type: integer
+          nullable: true
+        agent_name:
+          type: string
+          readOnly: true
+        search_parameters:
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        reference:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 3
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          readOnly: true
+        integration:
+          allOf:
+          - $ref: '#/components/schemas/PaynowIntegration'
+          readOnly: true
+        integration_id:
+          type: integer
+          writeOnly: true
+        paynow_payment_id:
+          type: string
+          readOnly: true
+        poll_url:
+          type: string
+          format: uri
+          readOnly: true
+        payment_url:
+          type: string
+          format: uri
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        buyer_phone:
+          type: string
+          nullable: true
+      required:
+      - amount
+      - created_at
+      - id
+      - integration
+      - integration_id
+      - payment_url
+      - paynow_payment_id
+      - poll_url
+      - reference
+      - status
+    PaymentStatusEnum:
+      enum:
+      - Created
+      - Sent
+      - Paid
+      - Failed
+      - Cancelled
+      type: string
+      description: |-
+        * `Created` - Created
+        * `Sent` - Sent
+        * `Paid` - Paid
+        * `Failed` - Failed
+        * `Cancelled` - Cancelled
+    PaynowIntegration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        currency:
+          type: string
+          maxLength: 3
+        return_url:
+          type: string
+          format: uri
+          maxLength: 200
+        result_url:
+          type: string
+          format: uri
+          maxLength: 200
+      required:
+      - id
+      - name
+      - result_url
+      - return_url
+    PlaceOfInterest:
+      type: object
+      properties:
+        place:
+          type: integer
+          readOnly: true
+        place_name:
+          type: string
+          readOnly: true
+        place_type_display:
+          type: string
+          readOnly: true
+        distance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+          title: Distance (miles)
+      required:
+      - distance
+      - place
+      - place_name
+      - place_type_display
+    PropertyDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        property_type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyTypeEnum'
+          title: Type
+        property_type_display:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status7b4Enum'
+        status_display:
+          type: string
+          readOnly: true
+        listing_type:
+          $ref: '#/components/schemas/ListingTypeEnum'
+        listing_type_display:
+          type: string
+          readOnly: true
+        featured:
+          type: boolean
+          title: Featured Property
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        zip_code:
+          type: string
+          maxLength: 20
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        viewing_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        bathrooms:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        area:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          title: Area (sq ft)
+        owner:
+          type: integer
+        owner_name:
+          type: string
+          readOnly: true
+        listing_agency:
+          type: integer
+          nullable: true
+        listing_agency_name:
+          type: string
+          readOnly: true
+          nullable: true
+        property_places:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceOfInterest'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyImage'
+          readOnly: true
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyVideo'
+          readOnly: true
+        primary_image:
+          type: string
+          readOnly: true
+      required:
+      - address
+      - area
+      - city
+      - created_at
+      - description
+      - id
+      - images
+      - listing_agency_name
+      - listing_type_display
+      - owner
+      - owner_name
+      - price
+      - primary_image
+      - property_places
+      - property_type
+      - property_type_display
+      - state
+      - status_display
+      - title
+      - updated_at
+      - videos
+      - zip_code
+    PropertyImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image_url:
+          type: string
+          readOnly: true
+        thumbnail_url:
+          type: string
+          readOnly: true
+        is_primary:
+          type: boolean
+          readOnly: true
+          title: Primary Image
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - image_url
+      - is_primary
+      - thumbnail_url
+    PropertyInterest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - property
+      - property_details
+      - user
+      - user_name
+    PropertyTypeEnum:
+      enum:
+      - apartment
+      - house
+      - land
+      - commercial
+      type: string
+      description: |-
+        * `apartment` - Apartment
+        * `house` - House
+        * `land` - Land
+        * `commercial` - Commercial
+    PropertyVideo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        video_url:
+          type: string
+          readOnly: true
+        thumbnail_url:
+          type: string
+          readOnly: true
+        duration:
+          type: integer
+          readOnly: true
+          nullable: true
+          title: Duration (seconds)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - duration
+      - id
+      - thumbnail_url
+      - video_url
+    PublicPropertyList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        property_type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyTypeEnum'
+          title: Type
+        property_type_display:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status7b4Enum'
+        status_display:
+          type: string
+          readOnly: true
+        listing_type:
+          $ref: '#/components/schemas/ListingTypeEnum'
+        listing_type_display:
+          type: string
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        bathrooms:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        city:
+          type: string
+          maxLength: 100
+        primary_image:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        featured:
+          type: boolean
+          title: Featured Property
+      required:
+      - city
+      - created_at
+      - id
+      - listing_type_display
+      - price
+      - primary_image
+      - property_type
+      - property_type_display
+      - status_display
+      - title
+    RegisterAsEnum:
+      enum:
+      - customer
+      - agent
+      type: string
+      description: |-
+        * `customer` - Customer
+        * `agent` - Agent
+    RentalContract:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        tenant:
+          type: integer
+        tenant_name:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        monthly_rent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        security_deposit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - id
+      - monthly_rent
+      - property
+      - property_details
+      - security_deposit
+      - start_date
+      - status
+      - tenant
+      - tenant_name
+    RoleEnum:
+      enum:
+      - customer
+      - admin
+      - agent
+      - agency_admin
+      - agency_staff
+      type: string
+      description: |-
+        * `customer` - Customer
+        * `admin` - Admin
+        * `agent` - Agent
+        * `agency_admin` - Agency Admin
+        * `agency_staff` - Agency Staff
+    SaleContract:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        buyer:
+          type: integer
+        buyer_name:
+          type: string
+          readOnly: true
+        sale_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - buyer
+      - buyer_name
+      - created_at
+      - id
+      - property
+      - property_details
+      - sale_price
+      - status
+    ServiceSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        service_type:
+          $ref: '#/components/schemas/ServiceTypeEnum'
+        service_type_display:
+          type: string
+          readOnly: true
+        property:
+          type: integer
+        property_details:
+          allOf:
+          - $ref: '#/components/schemas/PublicPropertyList'
+          readOnly: true
+        user:
+          type: integer
+        user_name:
+          type: string
+          readOnly: true
+        valid_until:
+          type: string
+          format: date-time
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - property
+      - property_details
+      - service_type
+      - service_type_display
+      - status
+      - user
+      - user_name
+      - valid_until
+    ServiceTypeEnum:
+      enum:
+      - viewing
+      - rental
+      - purchase
+      type: string
+      description: |-
+        * `viewing` - Property Viewing Access
+        * `rental` - Rental Processing
+        * `purchase` - Purchase Processing
+    Specialization:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+      required:
+      - id
+      - name
+    Status7b4Enum:
+      enum:
+      - available
+      - sold
+      - rented
+      - under_maintenance
+      type: string
+      description: |-
+        * `available` - Available
+        * `sold` - Sold
+        * `rented` - Rented
+        * `under_maintenance` - Under Maintenance
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    TransactionTypeEnum:
+      enum:
+      - admin
+      - processing
+      - commitment
+      - viewing
+      - rent
+      - purchase
+      type: string
+      description: |-
+        * `admin` - Administration Fee
+        * `processing` - Processing Fee
+        * `commitment` - Commitment Fee
+        * `viewing` - Viewing Fee
+        * `rent` - Rent Payment
+        * `purchase` - Purchase Payment
+    TypeEnum:
+      enum:
+      - sales
+      - broker
+      - appraiser
+      type: string
+      description: |-
+        * `sales` - Sales License
+        * `broker` - Broker License
+        * `appraiser` - Appraiser License
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+        confirm_password:
+          type: string
+          writeOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 128
+        alternate_phone:
+          type: string
+          nullable: true
+          maxLength: 128
+        is_active:
+          type: boolean
+          title: Active
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        cover_photo:
+          type: string
+          format: uri
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        gender:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        email_verified:
+          type: boolean
+          readOnly: true
+        phone_verified:
+          type: boolean
+          readOnly: true
+        tfa_enabled:
+          type: boolean
+          title: 2FA Enabled
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: Staff status
+        notification_preferences: {}
+        communication_preferences: {}
+        agency:
+          allOf:
+          - $ref: '#/components/schemas/Agency'
+          readOnly: true
+        agency_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        agency_role:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AgencyRoleEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        languages:
+          title: Languages Spoken
+        service_areas: {}
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        reviews_count:
+          type: integer
+          readOnly: true
+        facebook_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Facebook Profile
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          nullable: true
+          title: LinkedIn Profile
+          maxLength: 200
+        twitter_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Twitter Profile
+          maxLength: 200
+        instagram_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Instagram Profile
+          maxLength: 200
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/License'
+          readOnly: true
+        specializations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Specialization'
+          readOnly: true
+        agent_profile:
+          allOf:
+          - $ref: '#/components/schemas/AgentProfile'
+          readOnly: true
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDevice'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        agency_verified:
+          type: boolean
+          readOnly: true
+        average_response_time:
+          type: integer
+          readOnly: true
+          nullable: true
+        is_online:
+          type: boolean
+          readOnly: true
+        verification_documents:
+          type: string
+          format: uri
+          writeOnly: true
+          nullable: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_activity:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_seen:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - agency
+      - agency_verified
+      - agent_profile
+      - average_response_time
+      - created_at
+      - devices
+      - email
+      - email_verified
+      - first_name
+      - id
+      - is_online
+      - is_staff
+      - last_activity
+      - last_login
+      - last_name
+      - last_seen
+      - licenses
+      - phone_verified
+      - rating
+      - reviews_count
+      - specializations
+      - updated_at
+    UserActivityLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        user_email:
+          type: string
+          format: email
+          readOnly: true
+        user_full_name:
+          type: string
+          readOnly: true
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ActionEnum'
+          readOnly: true
+        details:
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        user_agent:
+          type: string
+          readOnly: true
+          nullable: true
+        device_id:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - action
+      - details
+      - device_id
+      - id
+      - ip_address
+      - timestamp
+      - user
+      - user_agent
+      - user_email
+      - user_full_name
+    UserDevice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        device_name:
+          type: string
+          maxLength: 255
+        device_type:
+          type: string
+          maxLength: 100
+        os:
+          type: string
+          title: Operating System
+          maxLength: 100
+        browser:
+          type: string
+          maxLength: 100
+        ip_address:
+          type: string
+          readOnly: true
+        last_used:
+          type: string
+          format: date-time
+          readOnly: true
+        is_trusted:
+          type: boolean
+          title: Trusted Device
+      required:
+      - browser
+      - device_name
+      - device_type
+      - id
+      - ip_address
+      - last_used
+      - os
+    UserFavorite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        property:
+          type: integer
+          nullable: true
+        property_title:
+          type: string
+          readOnly: true
+        agent:
+          type: integer
+          nullable: true
+        agent_name:
+          type: string
+          readOnly: true
+        search_parameters:
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - agent
+      - agent_name
+      - created_at
+      - id
+      - property
+      - property_title
+      - user
+    UserRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+        confirm_password:
+          type: string
+          writeOnly: true
+        register_as:
+          allOf:
+          - $ref: '#/components/schemas/RegisterAsEnum'
+          writeOnly: true
+          default: customer
+        agency_name:
+          type: string
+          writeOnly: true
+          nullable: true
+      required:
+      - confirm_password
+      - email
+      - first_name
+      - last_name
+      - password
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

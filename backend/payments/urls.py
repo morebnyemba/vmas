@@ -1,5 +1,4 @@
 # backend/payments/urls.py
-# api/urls.py
 from django.urls import path
 from .views import (
     PaynowIntegrationListAPIView,
@@ -8,14 +7,17 @@ from .views import (
     PaymentWebhookAPIView
 )
 
+# Define the namespace for this app
+app_name = 'payments'
+
 urlpatterns = [
     # Payment Gateway Integrations
-    path('paynow-integrations/', PaynowIntegrationListAPIView.as_view(), name='paynow-integrations'),
+    path('paynow-integrations/', PaynowIntegrationListAPIView.as_view(), name='get_integrations'),
 
     # Payment Processing
-    path('payments/', PaymentCreateAPIView.as_view(), name='payment-create'),
-    path('payments/<uuid:reference>/', PaymentRetrieveAPIView.as_view(), name='payment-detail'),
+    path('payments/', PaymentCreateAPIView.as_view(), name='create_payment'),
+    path('payments/<uuid:reference>/', PaymentRetrieveAPIView.as_view(), name='retrieve_payment'),
 
     # Webhook
-    path('webhook/paynow/', PaymentWebhookAPIView.as_view(), name='paynow-webhook'),
+    path('webhook/paynow/', PaymentWebhookAPIView.as_view(), name='webhook'),
 ]

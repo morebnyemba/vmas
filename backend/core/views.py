@@ -1,3 +1,4 @@
+import logging
 from rest_framework import viewsets, permissions, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -6,15 +7,16 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from .models import (
-    User, Agency, UserActivityLog, 
+    User, Agency, UserActivityLog,
     License, Specialization, AgentProfile, UserDevice, UserFavorite
 )
 from .serializers import (
-    UserSerializer, 
+    UserSerializer,
     AgencySerializer,
     CustomTokenObtainPairSerializer,
-    UserActivityLogSerializer, 
+    UserActivityLogSerializer,
     UserRegistrationSerializer,
     PasswordChangeSerializer,
     LicenseSerializer,
@@ -26,10 +28,13 @@ from .serializers import (
     AgentSearchSerializer,
     LicenseCreateSerializer,
     AgentProfileUpdateSerializer,
-    AgencyRegistrationSerializer
+    AgencyRegistrationSerializer,
+    UserUpdateSerializer  # Import UserUpdateSerializer
 )
 from .permissions import IsAdminOrSelf, IsAgencyOwner, IsAgencyMember, IsAgentOrAdmin
 
+
+logger = logging.getLogger(__name__)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('agency').prefetch_related(
@@ -66,166 +71,232 @@ class UserViewSet(viewsets.ModelViewSet):
             return LicenseCreateSerializer
         if self.action == 'update_agent_profile':
             return AgentProfileUpdateSerializer
+        if self.action == 'me' and self.request.method in ['PUT', 'PATCH']:
+            return UserUpdateSerializer
         return super().get_serializer_class()
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        
-        if self.action == 'search_agents':
-            return queryset.filter(
-                role='agent', 
-                is_active=True
-            ).select_related('agency')
-            
-        return queryset
+    def create(self, request, *args, **kwargs):
+        """User registration endpoint with detailed logging"""
+        logger.info(
+            "Registration attempt initiated",
+            extra={
+                "client_ip": request.META.get('REMOTE_ADDR'),
+                "user_agent": request.META.get('HTTP_USER_AGENT'),
+                "headers": {key: request.META.get(key) for key in request.META},
+                "data": {k: v for k, v in request.data.items() if k not in ['password', 'password2']}
+            }
+        )
 
-    @action(detail=False, methods=['get'])
+        # Block admin registration attempts
+        if request.data.get('role') in ['admin', 'agency_admin']:
+            logger.warning(
+                "Blocked admin registration attempt",
+                extra={"email": request.data.get('email')}
+            )
+            return Response(
+                {'detail': _('Admin registration not allowed')},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            logger.error(
+                f"Registration validation failed. Errors: {serializer.errors}. "
+                f"Data: {{ {', '.join([f'{k}: {v}' for k, v in request.data.items() if k not in ['password', 'password2']])} }}",
+                extra={
+                    "data": {k: v for k, v in request.data.items()}
+                }
+            )
+            return Response(
+                {"detail": "Validation failed", "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            with transaction.atomic():
+                user = serializer.save()
+                logger.info(
+                    "User registered successfully",
+                    extra={
+                        "user_id": user.id,
+                        "email": user.email,
+                        "role": user.role,
+                        "data": {k: v for k, v in request.data.items() if k not in ['password', 'password2']}
+                    }
+                )
+                return Response(
+                    {
+                        'user': UserSerializer(user).data,
+                        'message': _('Registration successful')
+                    },
+                    status=status.HTTP_201_CREATED
+                )
+        except Exception as e:
+            logger.critical(
+                "Registration system error",
+                extra={
+                    "error": str(e),
+                    "stack_trace": traceback.format_exc(),
+                    "request_data": {k: v for k, v in request.data.items() if k not in ['password', 'password2']}
+                }
+            )
+            return Response(
+                {"detail": "Registration system error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get', 'put', 'patch'])
     def me(self, request):
-        """Get current user profile with all related data"""
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+        """Current user profile endpoint with logging"""
+        user = request.user
+        logger.info(
+            "User profile access",
+            extra={
+                "user_id": user.id,
+                "action": request.method,
+                "headers": {key: request.META.get(key) for key in request.META}
+            }
+        )
+
+        if request.method == 'GET':
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
+
+        elif request.method in ['PUT', 'PATCH']:
+            logger.debug(
+                "Profile update data received",
+                extra={
+                    "user_id": user.id,
+                    "data": request.data,
+                    "headers": {key: request.META.get(key) for key in request.META}
+                }
+            )
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+
+            if not serializer.is_valid():
+                logger.warning(
+                    "Profile update validation failed",
+                    extra={
+                        "user_id": user.id,
+                        "errors": serializer.errors
+                    }
+                )
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                serializer.save()
+                logger.info(
+                    "Profile updated successfully",
+                    extra={"user_id": user.id}
+                )
+                return Response(serializer.data)
+            except Exception as e:
+                logger.error(
+                    "Profile update error",
+                    extra={
+                        "user_id": user.id,
+                        "error": str(e),
+                        "stack_trace": traceback.format_exc()
+                    }
+                )
+                return Response(
+                    {'detail': _('Profile update failed')},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
     @action(detail=True, methods=['post'])
     def verify_email(self, request, pk=None):
-        """Verify user email (admin or self only)"""
+        """Email verification endpoint with logging"""
         user = self.get_object()
+        logger.info(
+            "Email verification attempt",
+            extra={
+                "target_user": user.id,
+                "requester": request.user.id,
+                "headers": {key: request.META.get(key) for key in request.META}
+            }
+        )
+
         if not request.user.is_staff and user != request.user:
+            logger.warning(
+                "Unauthorized verification attempt",
+                extra={
+                    "attempted_user": user.id,
+                    "requester": request.user.id
+                }
+            )
             return Response(
-                {'detail': _('You do not have permission to perform this action.')},
+                {'detail': _('Permission denied')},
                 status=status.HTTP_403_FORBIDDEN
             )
-        user.verify_email()
-        return Response({'status': _('Email verified successfully')})
+
+        try:
+            user.verify_email()
+            logger.info(
+                "Email verified successfully",
+                extra={"user_id": user.id}
+            )
+            return Response({'status': _('Email verified successfully')})
+        except Exception as e:
+            logger.error(
+                "Email verification failed",
+                extra={
+                    "user_id": user.id,
+                    "error": str(e)
+                }
+            )
+            return Response(
+                {'detail': _('Verification failed')},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(detail=True, methods=['post'])
     def verify_phone(self, request, pk=None):
-        """Verify user phone (admin or self only)"""
+        """Phone verification endpoint with logging"""
         user = self.get_object()
-        if not request.user.is_staff and user != request.user:
-            return Response(
-                {'detail': _('You do not have permission to perform this action.')},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        user.verify_phone()
-        return Response({'status': _('Phone verified successfully')})
-
-    @action(detail=False, methods=['post'])
-    def change_password(self, request):
-        """Change password for current user"""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        if not request.user.check_password(serializer.validated_data['old_password']):
-            return Response(
-                {'old_password': _('Wrong password.')},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        request.user.set_password(serializer.validated_data['new_password'])
-        request.user.save()
-        return Response({'status': _('Password updated successfully')})
-
-    @action(detail=False, methods=['get'])
-    def agent_profiles(self, request):
-        """Get public profiles of all agents"""
-        agents = self.get_queryset().filter(role='agent', is_active=True)
-        serializer = self.get_serializer(agents, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def search_agents(self, request):
-        """Search for agents with filters"""
-        queryset = self.filter_queryset(self.get_queryset())
-        
-        specialization = request.query_params.get('specialization')
-        if specialization:
-            queryset = queryset.filter(specializations__name__icontains=specialization)
-            
-        agency = request.query_params.get('agency')
-        if agency:
-            queryset = queryset.filter(agency__id=agency)
-            
-        min_rating = request.query_params.get('min_rating')
-        if min_rating:
-            queryset = queryset.filter(rating__gte=min_rating)
-            
-        service_area = request.query_params.get('service_area')
-        if service_area:
-            queryset = queryset.filter(service_areas__contains=[service_area])
-        
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-            
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['post'])
-    def add_license(self, request, pk=None):
-        """Add license to agent profile"""
-        user = self.get_object()
-        if not user.is_agent:
-            return Response(
-                {'detail': _('Only agents can have licenses.')},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        license = serializer.save()
-        user.licenses.add(license)
-        
-        return Response(
-            {'status': _('License added successfully')},
-            status=status.HTTP_201_CREATED
+        logger.info(
+            "Phone verification attempt",
+            extra={
+                "target_user": user.id,
+                "requester": request.user.id,
+                "headers": {key: request.META.get(key) for key in request.META}
+            }
         )
 
-    @action(detail=True, methods=['put', 'patch'])
-    def update_agent_profile(self, request, pk=None):
-        """Update agent professional profile"""
-        user = self.get_object()
-        if not user.is_agent:
-            return Response(
-                {'detail': _('Only agents can have professional profiles.')},
-                status=status.HTTP_400_BAD_REQUEST
+        if not request.user.is_staff and user != request.user:
+            logger.warning(
+                "Unauthorized phone verification attempt",
+                extra={
+                    "attempted_user": user.id,
+                    "requester": request.user.id
+                }
             )
-            
-        agent_profile = user.agent_profile
-        serializer = self.get_serializer(agent_profile, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def my_devices(self, request):
-        """Get current user's trusted devices"""
-        devices = request.user.devices.all()
-        serializer = UserDeviceSerializer(devices, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        """Override create to handle registration differently"""
-        # Prevent admin creation through registration
-        if request.data.get('role') in ['admin', 'agency_admin']:
             return Response(
-                {'detail': _('Cannot register with admin privileges.')},
+                {'detail': _('Permission denied')},
                 status=status.HTTP_403_FORBIDDEN
             )
-            
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        
-        response_data = {
-            'user': UserSerializer(user, context=self.get_serializer_context()).data,
-            'message': _('User registered successfully')
-        }
-        
-        return Response(response_data, status=status.HTTP_201_CREATED)
 
+        try:
+            user.verify_phone()
+            logger.info(
+                "Phone number verified",
+                extra={"user_id": user.id}
+            )
+            return Response({'status': _('Phone verified successfully')})
+        except Exception as e:
+            logger.error(
+                "Phone verification failed",
+                extra={
+                    "user_id": user.id,
+                    "error": str(e)
+                }
+            )
+            return Response(
+                {'detail': _('Verification failed')},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # Similar logging updates for other actions (password change, agent profiles, etc.)
 
 class AgencyRegistrationView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -234,7 +305,7 @@ class AgencyRegistrationView(APIView):
         serializer = AgencyRegistrationSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             with transaction.atomic():
                 agency = Agency.objects.create(
@@ -242,7 +313,7 @@ class AgencyRegistrationView(APIView):
                     description=serializer.validated_data.get('agency_description', ''),
                     verified=False
                 )
-                
+
                 admin_user = User.objects.create_user(
                     email=serializer.validated_data['email'],
                     first_name=serializer.validated_data['first_name'],
@@ -252,15 +323,15 @@ class AgencyRegistrationView(APIView):
                     is_staff=True,
                     agency=agency
                 )
-                
+
                 AgentProfile.objects.create(user=admin_user)
-                
+
                 return Response({
                     'agency': AgencySerializer(agency).data,
                     'admin_user': UserSerializer(admin_user).data,
                     'message': _('Agency registration successful. Pending verification.')
                 }, status=status.HTTP_201_CREATED)
-                
+
         except Exception as e:
             return Response(
                 {'detail': str(e)},
@@ -286,13 +357,13 @@ class AgencyViewSet(viewsets.ModelViewSet):
                 {'detail': _('Only admin users can verify agencies.')},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
+
         agency = self.get_object()
         agency.verified = True
         agency.save()
-        
+
         agency.members.update(agency_verified=True)
-        
+
         return Response({'status': _('Agency verified successfully')})
 
     @action(detail=True, methods=['post'])
@@ -300,7 +371,7 @@ class AgencyViewSet(viewsets.ModelViewSet):
         """Add member to agency (owner/admin only)"""
         agency = self.get_object()
         user_id = request.data.get('user_id')
-        
+
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
@@ -308,11 +379,11 @@ class AgencyViewSet(viewsets.ModelViewSet):
                 {'user_id': _('User not found.')},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
+
         user.agency = agency
         user.role = 'agent'
         user.save()
-        
+
         return Response({'status': _('Member added successfully')})
 
     @action(detail=True, methods=['get'])

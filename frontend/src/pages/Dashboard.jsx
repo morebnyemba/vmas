@@ -2,6 +2,8 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { getAccessToken, getRefreshToken, setAuthTokens, clearAuthTokens } from '@/api/auth';
+import apiClient from '@/api/client';
 import {
     Home,
     Heart,
@@ -135,10 +137,14 @@ const CustomerDashboard = () => {
     }, [loading, isAuthenticated]);
 
     const getUserInitials = () => {
-        const firstInitial = user?.first_name?.[0] || '';
-        const lastInitial = user?.last_name?.[0] || '';
-        return `${firstInitial}${lastInitial}`.toUpperCase() || 'U';
-    };
+        if (!user?.fullName) return 'U';
+        
+        // Split the full name and get initials from parts
+        const nameParts = user.fullName.split(' ').filter(part => part.length > 0);
+        const initials = nameParts.map(part => part[0] || '').join('');
+        
+        return initials.toUpperCase() || 'U';
+      };
 
     const getFullName = () => {
         if (user?.first_name && user?.last_name) {
@@ -152,7 +158,7 @@ const CustomerDashboard = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">
-                        Welcome back, <span className="text-blue-700">{user?.first_name || 'User'}</span>!
+                        Welcome back, <span className="text-blue-700">{user?.fullName || 'User'}</span>!
                     </h1>
                     <p className="text-muted-foreground mt-2.5">
                         Here's your personalized property search update
@@ -432,50 +438,376 @@ const CustomerDashboard = () => {
         </Card>
     );
 
-    const ProfileView = () => (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    const ProfileView = () => {
+        const { user, loadUserProfile, getAccessToken } = useAuth();
+        const [editMode, setEditMode] = useState(false);
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState(null);
+        const [formData, setFormData] = useState({
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
+          email: user?.email || '',
+          phone: user?.phoneNumber || '',
+          alternatePhone: user?.alternatePhone || '',
+          dateOfBirth: user?.dateOfBirth || '',
+          bio: user?.bio || '',
+          gender: user?.gender || '',
+          agency: user?.agency || '',
+          agencyRole: user?.agencyRole || '',
+          yearsOfExperience: user?.yearsOfExperience !== null && user?.yearsOfExperience !== undefined ? user.yearsOfExperience.toString() : '',
+          languages: user?.languages ? user.languages.join(', ') : '',
+          // Add more editable fields here if needed
+        });
+      
+        useEffect(() => {
+          if (user) {
+            setFormData({
+              firstName: user.firstName || '',
+              lastName: user.lastName || '',
+              email: user.email || '',
+              phone: user.phoneNumber || '',
+              alternatePhone: user.alternatePhone || '',
+              dateOfBirth: user.dateOfBirth || '',
+              bio: user.bio || '',
+              gender: user.gender || '',
+              agency: user.agency || '',
+              agencyRole: user.agencyRole || '',
+              yearsOfExperience: user.yearsOfExperience !== null && user.yearsOfExperience !== undefined ? user.yearsOfExperience.toString() : '',
+              languages: user.languages ? user.languages.join(', ') : '',
+              // Add more editable fields here if needed
+            });
+          }
+        }, [user]);
+      
+        const handleInputChange = (e) => {
+          const { name, value } = e.target;
+          setFormData(prev => ({
+            ...prev,
+            [name]: value
+          }));
+        };
+      
+        const handleSave = async () => {
+          try {
+            setLoading(true);
+            setError(null);
+      
+            const accessToken = getAccessToken();
+            if (!accessToken) {
+              throw new Error('Authentication token not found');
+            }
+      
+            const payload = {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              phone_number: formData.phone,
+              alternate_phone: formData.alternatePhone,
+              date_of_birth: formData.dateOfBirth || null, // Send null if empty
+              bio: formData.bio,
+              gender: formData.gender || null,
+              agency: formData.agency || null,
+              agency_role: formData.agencyRole || null,
+              years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience, 10) : null,
+              languages: formData.languages ? formData.languages.split(',').map(lang => lang.trim()) : [],
+              // Add more editable fields to the payload as needed
+            };
+      
+            const response = await apiClient.patch('core/users/me/', payload, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+      
+            if (response.status === 200) {
+              await loadUserProfile(accessToken);
+              setEditMode(false);
+              // Optional: Show success notification
+            }
+          } catch (err) {
+            console.error('Failed to update profile:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to update profile');
+            // Optional: Show error notification
+          } finally {
+            setLoading(false);
+          }
+        };
+      
+        const getUserInitials = () => {
+          if (!user?.firstName && !user?.lastName) return 'U';
+          const firstNameInitial = user?.firstName ? user.firstName.charAt(0).toUpperCase() : '';
+          const lastNameInitial = user?.lastName ? user.lastName.charAt(0).toUpperCase() : '';
+          return `${firstNameInitial}${lastNameInitial}` || 'U';
+        };
+      
+        const getFullName = () => {
+          return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
+        };
+      
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="border-0 shadow-xl lg:col-span-1">
-                <CardContent className="p-6">
-                    <div className="flex flex-col items-center">
-                        <div className="relative mb-4">
-                            <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-bold">
-                                {getUserInitials()}
-                            </div>
-                            <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-400 rounded-full border-2 border-white"></div>
-                        </div>
-                        <h3 className="text-xl font-bold">{getFullName()}</h3>
-                        <p className="text-muted-foreground">{user?.email || 'user@example.com'}</p>
-                        <Button className="mt-4 w-full">Edit Profile</Button>
+              <CardContent className="p-6">
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-bold">
+                      {getUserInitials()}
                     </div>
-                </CardContent>
+                    <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-400 rounded-full border-2 border-white"></div>
+                  </div>
+                  <h3 className="text-xl font-bold">{getFullName()}</h3>
+                  <p className="text-muted-foreground">{user?.email || 'N/A'}</p>
+                  {user?.role && <p className="text-sm text-muted-foreground mt-1">Role: {user.role}</p>}
+                  <Button
+                    className="mt-4 w-full"
+                    onClick={() => {
+                      setEditMode(!editMode);
+                      setError(null);
+                    }}
+                    disabled={loading}
+                  >
+                    {editMode ? 'Cancel Edit' : 'Edit Profile'}
+                  </Button>
+                </div>
+              </CardContent>
             </Card>
+      
             <Card className="border-0 shadow-xl lg:col-span-2">
-                <CardHeader>
-                    <CardTitle>Personal Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm font-medium text-muted-foreground">First Name</label>
-                            <p className="font-medium">{user?.first_name || 'Not provided'}</p>
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium text-muted-foreground">Last Name</label>
-                            <p className="font-medium">{user?.last_name || 'Not provided'}</p>
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium text-muted-foreground">Email</label>
-                            <p className="font-medium">{user?.email || 'Not provided'}</p>
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                            <p className="font-medium">Not provided</p>
-                        </div>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Personal Information</CardTitle>
+                {editMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSave}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                {error && (
+                  <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                    Error: {error}
+                  </div>
+                )}
+      
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">First Name</label>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.firstName || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Last Name</label>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.lastName || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      className="w-full p-2 mt-1 border rounded-md"
+                      disabled
+                      readOnly
+                      aria-readonly="true"
+                      tabIndex={-1}
+                      style={{ cursor: 'not-allowed', backgroundColor: '#f3f4f6', color: '#6b7280' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
+                    {editMode ? (
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.phoneNumber || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Alternate Phone</label>
+                    {editMode ? (
+                      <input
+                        type="tel"
+                        name="alternatePhone"
+                        value={formData.alternatePhone}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.alternatePhone || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Date of Birth</label>
+                    {editMode ? (
+                      <input
+                        type="date"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.dateOfBirth || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Gender</label>
+                    {editMode ? (
+                      <select
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    ) : (
+                      <p className="font-medium">{user?.gender || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div className="col-span-full">
+                    <label className="text-sm font-medium text-muted-foreground">Bio</label>
+                    {editMode ? (
+                      <textarea
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.bio || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Agency</label>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="agency"
+                        value={formData.agency}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.agency || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Agency Role</label>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="agencyRole"
+                        value={formData.agencyRole}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.agencyRole || 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Years of Experience</label>
+                    {editMode ? (
+                      <input
+                        type="number"
+                        name="yearsOfExperience"
+                        value={formData.yearsOfExperience}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.yearsOfExperience !== null && user?.yearsOfExperience !== undefined ? user.yearsOfExperience : 'N/A'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Languages</label>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="languages"
+                        value={formData.languages}
+                        onChange={handleInputChange}
+                        className="w-full p-2 mt-1 border rounded-md"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="font-medium">{user?.languages ? user.languages.join(', ') : 'Not provided'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Email Verified</label>
+                    <p className="font-medium">{user?.emailVerified ? 'Yes' : 'No'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Phone Verified</label>
+                    <p className="font-medium">{user?.phoneVerified ? 'Yes' : 'No'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">2FA Enabled</label>
+                    <p className="font-medium">{user?.tfaEnabled ? 'Yes' : 'No'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Is Staff</label>
+                    <p className="font-medium">{user?.isStaff ? 'Yes' : 'No'}</p>
+                  </div>
+                  {user?.lastLogin && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Last Login</label>
+                      <p className="font-medium">{new Date(user.lastLogin).toLocaleString()}</p>
                     </div>
-                </CardContent>
+                  )}
+                  {user?.lastActivity && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Last Activity</label>
+                      <p className="font-medium">{new Date(user.lastActivity).toLocaleString()}</p>
+                    </div>
+                  )}
+                  {/* You can add display for other fields like profilePicture, coverPhoto, rating, reviewsCount, social media URLs, licenses, specializations, etc. */}
+                </div>
+              </CardContent>
             </Card>
-        </div>
-    );
+          </div>
+        );
+      };
 
     const SettingsView = () => (
         <Card className="border-0 shadow-xl">
@@ -736,7 +1068,7 @@ const CustomerDashboard = () => {
                         </div>
                         {sidebarOpen && (
                             <div className="ml-3">
-                                <p className="font-medium text-sm">{getFullName()}</p>
+                                <p className="font-medium text-sm">{user?.fullName}</p>
                                 <p className="text-xs text-blue-200/80 mt-0.5">{user?.email || 'user@example.com'}</p>
                             </div>
                         )}
