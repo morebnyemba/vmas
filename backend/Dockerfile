@@ -12,10 +12,12 @@ WORKDIR /app
 
 # Install system dependencies
 # - build-essential and libpq-dev are often needed for psycopg2 (PostgreSQL adapter)
-# - Add any other system-level packages your project might need (e.g., for Pillow, specific image libraries, etc.)
+# - libmagic1 and file are needed for the 'python-magic' library
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
+    libmagic1 \
+    file \
     # Example: Add other dependencies like this:
     # libjpeg-dev \
     # zlib1g-dev \
