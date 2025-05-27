@@ -74,7 +74,6 @@ services:
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py create_superuser_with_password --username \"$$DJANGO_SUPERUSER_USERNAME\" --password \"$$DJANGO_SUPERUSER_PASSWORD\" --email \"$$DJANGO_SUPERUSER_EMAIL\" --noinput || true &&
              gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3"
 
   celery_worker:
