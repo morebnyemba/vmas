@@ -3,7 +3,7 @@ import { FiMapPin, FiPhone, FiMail, FiSend, FiClock, FiMessageCircle, FiLifeBuoy
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import useSEO from "@/hooks/useSEO";
+import useSEO from "../hooks/useSEO";
 
 // WhatsApp-themed color scheme
 const colors = {
