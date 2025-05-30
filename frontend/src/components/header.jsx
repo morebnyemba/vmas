@@ -3,7 +3,7 @@ import {
   Menu, X, Home, Building, HandCoins, ClipboardList,
   Info, Phone, ChevronDown, CircleDollarSign, HomeIcon,
   HelpCircle, LogIn, Facebook, Twitter, Instagram, Linkedin,
-  Users, Handshake, Quote, Briefcase
+  Users, Handshake, Quote, Briefcase, MessageCircle, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,6 +99,19 @@ export function Header() {
               <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>24/7 Support: +263 772 123 456</span>
             </a>
+            <span className="hidden sm:flex items-center gap-2">
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span>Mon-Fri: 8AM-5PM</span>
+            </span>
+            <a 
+              href="https://wa.me/263772123456" 
+              className="hidden sm:flex items-center gap-2 hover:text-blue-200 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span>WhatsApp</span>
+            </a>
           </div>
           <div className="hidden sm:flex items-center gap-4">
             <div className="flex items-center gap-3">
@@ -128,6 +141,16 @@ export function Header() {
           <div className="flex md:hidden w-full items-center justify-between px-4">
             <Logo />
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-blue-200 bg-blue-50 hover:bg-blue-100 rounded-lg"
+                asChild
+              >
+                <Link to="/signin">
+                  <LogIn className="h-5 w-5" />
+                </Link>
+              </Button>
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
                   <Button
