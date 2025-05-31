@@ -8,7 +8,7 @@ from core.models import User
 from paynow import Paynow
 from paynow.model import InitResponse
 from urllib.parse import urlparse, parse_qs
-
+from django.utils.translation import gettext_lazy as _
 # Logger
 logger = logging.getLogger(__name__)
 
@@ -141,3 +141,48 @@ class Payment(models.Model):
                     self.status = 'Failed'
                     self.error_message = f"Failed after {retries} attempts: {str(e)}"
                     self.save()
+class Receipt(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name='receipt')
+    receipt_number = models.CharField(_('Receipt Number'), max_length=50, unique=True, blank=True)
+    issued_at = models.DateTimeField(_('Issued At'), auto_now_add=True)
+    
+    customer_name = models.CharField(_('Customer Name'), max_length=255, blank=True)
+    customer_email = models.EmailField(_('Customer Email'), blank=True)
+    customer_phone = models.CharField(_('Customer Phone'), max_length=20, blank=True, null=True)
+    
+    amount_paid = models.DecimalField(_('Amount Paid'), max_digits=10, decimal_places=2)
+    currency = models.CharField(_('Currency'), max_length=3)
+    payment_method_details = models.CharField(_('Payment Method'), max_length=100, blank=True)
+    
+    items_description = models.TextField(_('Items/Services Description'), blank=True)
+    # If you prefer structured item details with ReportLab, you might process a JSONField here
+    # or pass structured data directly to the ReportLab generation function.
+    # itemized_details = models.JSONField(_('Itemized Details'), default=list, blank=True) 
+    
+    receipt_pdf = models.FileField(_('Receipt PDF'), upload_to='receipts/pdfs/', blank=True, null=True)
+    notes = models.TextField(_('Additional Notes'), blank=True, null=True)
+
+    def __str__(self):
+        return f"Receipt {self.receipt_number} for Payment {self.payment.reference}"
+
+    def save(self, *args, **kwargs):
+        if not self.receipt_number:
+            # Generate a unique receipt number
+            today_str = self.issued_at.strftime('%Y%m%d')
+            last_receipt_today = Receipt.objects.filter(receipt_number__startswith=f"RCPT-{today_str}-").order_by('receipt_number').last()
+            if last_receipt_today:
+                try:
+                    last_num_str = last_receipt_today.receipt_number.split('-')[-1]
+                    new_num = int(last_num_str) + 1
+                except (ValueError, IndexError):
+                    new_num = 1 # Fallback
+            else:
+                new_num = 1
+            self.receipt_number = f"RCPT-{today_str}-{new_num:04d}"
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-issued_at']
+        verbose_name = _('Receipt')
+        verbose_name_plural = _('Receipts')
