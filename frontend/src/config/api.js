@@ -59,7 +59,7 @@ api.interceptors.response.use(
     
     // Unified error handling
     const processedError = processError(error);
-    showErrorNotification(processedError);  // Replace with your notification system
+    // showErrorNotification(processedError);  // TODO: Implement notification system
     
     return Promise.reject(processedError);
   }

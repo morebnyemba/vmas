@@ -1,6 +1,6 @@
 // hooks/useAuth.js
 import { useMutation, useQueryClient } from 'react-query';
-import { login, refreshToken } from '../api/auth';
+import { login } from '../api/auth';
 
 export const useAuth = () => {
   const queryClient = useQueryClient();

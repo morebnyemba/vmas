@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       }));
 
       return true;
-    } catch (err) {
+    } catch {
       setAuthState((prev) => ({
         ...prev,
         error: 'Unable to fetch user profile',
@@ -136,7 +136,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [loadUserProfile, navigate]);  // Updated to include navigate()
 
-  const register = useCallback(async (registerData) => {
+  const register = useCallback(async () => {
     // TODO: Call your registration API here and then redirect
     const redirectUrl = localStorage.getItem('redirectUrl');
     localStorage.removeItem('redirectUrl');

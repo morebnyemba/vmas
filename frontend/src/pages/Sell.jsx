@@ -231,7 +231,7 @@ export default function SellFlow() {
       window.open(whatsappUrl, '_blank');
       
       setStep(3);
-    } catch (error) {
+    } catch {
       setRegistrationError('Account creation failed. Please try again.');
     } finally {
       setIsSubmitting(false);

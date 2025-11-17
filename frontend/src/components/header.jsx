@@ -15,7 +15,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);

@@ -1,8 +1,6 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { getAccessToken, getRefreshToken, setAuthTokens, clearAuthTokens } from '@/api/auth';
 import apiClient from '@/api/client';
 import {
     Home,
@@ -134,7 +132,7 @@ const CustomerDashboard = () => {
         };
 
         loadDashboardData();
-    }, [loading, isAuthenticated]);
+    }, [loading, isAuthenticated, dashboardData]);
 
     const getUserInitials = () => {
         if (!user?.fullName) return 'U';
@@ -145,13 +143,6 @@ const CustomerDashboard = () => {
         
         return initials.toUpperCase() || 'U';
       };
-
-    const getFullName = () => {
-        if (user?.first_name && user?.last_name) {
-            return `${user.first_name} ${user.last_name}`;
-        }
-        return user?.first_name || user?.last_name || 'User';
-    };
 
     const DashboardHome = () => (
         <>
