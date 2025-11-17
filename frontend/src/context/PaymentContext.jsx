@@ -122,6 +122,7 @@ export const PaymentProvider = ({ children }) => {
           throw new Error('Polling timeout');
         }
       } catch (error) {
+        console.error('Polling error:', error);
         throw error;
       }
     };

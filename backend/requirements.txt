@@ -1,4 +1,4 @@
-﻿# Core Django
+# Core Django
 Django==5.1.7
 
 # Async tasks and scheduling

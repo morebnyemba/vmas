@@ -1,20 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePayment } from '@/context/PaymentContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LoaderCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import axios from 'axios';
 
 const Checkout = () => {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const {
     integrations,
     initiatePayment: contextInitiatePayment,
-    pollPaymentStatus,
     loading: paymentLoading,
-    error: paymentError,
   } = usePayment();
   const location = useLocation();
   const navigate = useNavigate();
@@ -58,32 +55,33 @@ const Checkout = () => {
   }, [authLoading, isAuthenticated, location, navigate]);
 
   // Handle payment polling
-  const startPolling = useCallback((reference) => {
-    let pollInterval;
-    let attempts = 0;
-    const maxAttempts = 24;
+  // TODO: This function is currently unused but may be needed for manual polling
+  // const startPolling = useCallback((reference) => {
+  //   let pollInterval;
+  //   let attempts = 0;
+  //   const maxAttempts = 24;
 
-    const poll = async () => {
-      try {
-        const res = await pollPaymentStatus(reference);
-        if (res?.data?.payment?.status === 'Paid') {
-          clearInterval(pollInterval);
-          toast.success('Payment successful!');
-          navigate('/dashboard');
-        } else if (++attempts >= maxAttempts) {
-          clearInterval(pollInterval);
-          toast.info('Payment verification taking longer than expected. Please check your payment history later.');
-        }
-      } catch (error) {
-        clearInterval(pollInterval);
-        toast.error('Payment verification failed');
-        console.error('Polling error:', error);
-      }
-    };
+  //   const poll = async () => {
+  //     try {
+  //       const res = await pollPaymentStatus(reference);
+  //       if (res?.data?.payment?.status === 'Paid') {
+  //         clearInterval(pollInterval);
+  //         toast.success('Payment successful!');
+  //         navigate('/dashboard');
+  //       } else if (++attempts >= maxAttempts) {
+  //         clearInterval(pollInterval);
+  //         toast.info('Payment verification taking longer than expected. Please check your payment history later.');
+  //       }
+  //     } catch (error) {
+  //       clearInterval(pollInterval);
+  //       toast.error('Payment verification failed');
+  //       console.error('Polling error:', error);
+  //     }
+  //   };
 
-    pollInterval = setInterval(poll, 5000);
-    return () => clearInterval(pollInterval);
-  }, [navigate, pollPaymentStatus]);
+  //   pollInterval = setInterval(poll, 5000);
+  //   return () => clearInterval(pollInterval);
+  // }, [navigate, pollPaymentStatus]);
 
   // Initialize payment data if coming from viewing fee
   useEffect(() => {

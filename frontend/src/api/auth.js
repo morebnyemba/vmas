@@ -91,11 +91,11 @@ export const verifyToken = async () => {
   try {
     await apiClient.post('core/auth/token/verify/', { token: access });
     return true;
-  } catch (error) {
+  } catch {
     try {
       await refreshToken();
       return true;
-    } catch (refreshError) {
+    } catch {
       return false;
     }
   }

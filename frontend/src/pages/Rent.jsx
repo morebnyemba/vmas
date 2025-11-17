@@ -146,7 +146,7 @@ export default function RentalPropertiesPage() {
     };
 
     loadData();
-  }, [filters, pagination.page, navigate]);
+  }, [filters, pagination.page, pagination.page_size, navigate]);
 
   const handleFilterChange = (newFilters) => {
     const updatedFilters = { 
